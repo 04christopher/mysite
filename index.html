@@ -147,10 +147,68 @@
         .hero {
             min-height: 100vh;
             display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: flex-start;
+            flex-direction: row; /* Layout: Row for Desktop */
+            justify-content: space-between; /* Space between text and image */
+            align-items: center;
             padding-top: 0;
+            gap: 2rem;
+        }
+
+        .hero-text {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .hero-profile {
+            flex: 0 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .profile-frame {
+            width: 350px;
+            height: 350px;
+            border: 4px solid var(--accent-cyan);
+            background: #000;
+            position: relative;
+            box-shadow: 8px 8px 0px rgba(0,0,0,0.5);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000; /* Lifts image above the scanlines */
+        }
+
+        .profile-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .download-btn {
+            background: transparent;
+            border: 2px solid var(--text-main);
+            color: var(--text-main);
+            padding: 10px 15px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.7rem;
+            text-decoration: none;
+            transition: all 0.2s;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .download-btn:hover {
+            background: var(--text-main);
+            color: var(--bg-dark);
+            transform: translateY(2px);
+            box-shadow: 2px 2px 0px rgba(0,0,0,0.5);
         }
 
         .hero h1 {
@@ -574,6 +632,14 @@
             .nav-links {
                 display: none;
             }
+            .hero {
+                flex-direction: column;
+                justify-content: center;
+                text-align: center;
+            }
+            .hero-text {
+                align-items: center;
+            }
             .hero h1 {
                 font-size: 1.8rem; /* Adjusted for mobile */
             }
@@ -609,17 +675,32 @@
 
 <!-- Hero Section -->
 <section class="hero" id="home">
-    <p class="arcade-font flash-effect" style="color: var(--accent-cyan); font-size: 0.8rem; margin-bottom: 1rem;">INSERT COIN TO START</p>
-    <h1>Christopher Chen</h1>
-    <div class="hero-subtitle">
-        <span style="color: var(--accent-orange); font-family: 'Press Start 2P', cursive; font-size: 1rem;">SELECT CLASS:</span>
-        <span id="typewriter" style="color: white; font-family: 'VT323', monospace; font-size: 2rem; margin-left: 10px;"></span><span class="cursor"></span>
+    <!-- Left Column: Text -->
+    <div class="hero-text">
+        <p class="arcade-font flash-effect" style="color: var(--accent-cyan); font-size: 0.8rem; margin-bottom: 1rem;">INSERT COIN TO START</p>
+        <h1>Christopher Chen</h1>
+        <div class="hero-subtitle">
+            <span style="color: var(--accent-orange); font-family: 'Press Start 2P', cursive; font-size: 1rem;">SELECT CLASS:</span>
+            <span id="typewriter" style="color: white; font-family: 'VT323', monospace; font-size: 2rem; margin-left: 10px;"></span><span class="cursor"></span>
+        </div>
+        <p style="max-width: 600px; color: #ddd; margin-bottom: 2rem; font-size: 1.5rem;">
+            Welcome to my website!<br>
+            Check out a bit about me below.
+        </p>
+        <a href="#projects" class="cta-btn">PRESS START</a>
     </div>
-    <p style="max-width: 600px; color: #ddd; margin-bottom: 2rem; font-size: 1.5rem;">
-        Welcome to my website!<br>
-        Check out a bit about me below.
-    </p>
-    <a href="#projects" class="cta-btn">PRESS START</a>
+
+    <!-- Right Column: Profile & Download -->
+    <div class="hero-profile">
+        <div class="profile-frame">
+            <!-- REPLACE 'assets/profile.jpg' WITH YOUR LOCAL IMAGE FILE -->
+            <img src="photos/profile.png" alt="Christopher Chen Profile">
+        </div>
+        <!-- REPLACE 'assets/resume.pdf' WITH YOUR LOCAL CV FILE -->
+        <a href="photos/ChristopherChenResume.pdf" class="download-btn" download>
+            DOWNLOAD CV <i class="fa-solid fa-file-arrow-down"></i>
+        </a>
+    </div>
 </section>
 
 <!-- About Section -->
@@ -634,7 +715,7 @@
             </p>
             <p style="margin-bottom: 15px;">
                 My last internship was at <a href="https://jostle.me" target="_blank" style="color: var(--accent-cyan); text-decoration: none; border-bottom: 1px dashed var(--accent-cyan);">Jostle</a>,
-                where I worked on all sorts of things, including our customer facing RAG conversational AI and search. I've also been employed at Canada Post and Mc Donald's.
+                where I worked on client facing library and chat features, including our customer facing RAG conversational AI and search. Previously, I've also been employed at Canada Post and Mc Donald's.
             </p>
             <p style="margin-bottom: 15px;">
                 At school, I'm particularly drawn to math, algorithms, and ML work, but I love working with any technology to solve a problem.
@@ -1519,7 +1600,8 @@
 
     // --- Typewriter Effect ---
     const textElement = document.getElementById('typewriter');
-    const phrases = ["DEVELOPER", "STUDENT", "BALL KNOWER", "SCOTTIE BARNES FAN"];
+    const phrases = ["SOFTWARE DEVELOPER",
+    "\"GREAT STUDENT\"", "TECH ENTHUSIAST","ALLEGEDLY VERY FUNNY"];
 
     let phraseIndex = 0;
     let charIndex = 0;
