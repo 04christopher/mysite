@@ -3,1667 +3,690 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Christopher Chen | Arcade Mode</title>
-    <!-- Fonts -->
+    <title>christopher chen — swe</title>
+    <meta name="description" content="Christopher Chen — Computer Science @ UBC, software engineer.">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
-    <!-- Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         :root {
-            /* 8-Bit Arcade Theme Colors */
-            --bg-dark: #1a0b2e; /* Deep Indigo */
-            --text-main: #f0f0f0; /* Off-white */
-            --header-color: #ff2a6d; /* Neon Pink */
-            --accent-cyan: #05d9e8; /* Neon Cyan */
-            --accent-yellow: #ffc800; /* Arcade Gold */
-            --accent-orange: #ff6c11; /* Hot Orange */
-            --glass-bg: rgba(20, 10, 40, 0.9);
-            --border-color: #05d9e8;
-            --card-hover: #2d1b4e;
+            --bg: #0d100e;
+            --bg-2: #0a0c0a;
+            --surface: #141915;
+            --surface-2: #1a201b;
+            --panel: #11150f;
+            --border: #29322b;
+            --text: #c9d2cb;
+            --muted: #7e8a80;
+            --green: #8fdca0;
+            --mint: #8fe0cf;
+            --sand: #d8c9a3;
+            --prompt: #6fbf86;
+            --shadow: 0 20px 50px -28px rgba(0,0,0,0.85);
+            --titlebar-h: 40px;
+            --status-h: 26px;
+            --activity-w: 48px;
+            --sidebar-w: 240px;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            scroll-behavior: smooth;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; scroll-padding-top: 92px; }
 
         body {
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            font-family: 'VT323', monospace; /* Readable pixel font for body */
-            font-size: 1.6rem; /* Increased font size */
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+            font-size: 15px;
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
             overflow-x: hidden;
-            line-height: 1.5;
-            text-shadow: 2px 2px 0px #000; /* Drop shadow for depth */
         }
-
-        /* --- CRT/Arcade Overlay --- */
-        body::after {
-            content: " ";
-            display: block;
-            position: fixed;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
-            z-index: 999;
-            background-size: 100% 4px;
-            pointer-events: none;
-        }
-
-        /* --- Canvas Background --- */
-        #bg-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            opacity: 0.6;
-        }
-
-        /* --- Typography --- */
-        h1, h2, h3, .arcade-font {
-            font-family: 'Press Start 2P', cursive; /* Chunky 8-bit font */
-            text-transform: uppercase;
-            line-height: 1.4;
-        }
-
-        h1 {
-            color: var(--accent-yellow);
-            text-shadow: 4px 4px 0px #d0205e; /* Pink shadow on yellow text */
-        }
-
-        h2 {
-            color: var(--accent-cyan);
-            text-shadow: 3px 3px 0px #2a0052;
-        }
-
-        h3 {
-            color: var(--header-color);
-        }
-
-        .mono {
-            font-family: 'VT323', monospace;
-        }
-
-        .accent-text {
-            color: var(--header-color);
-        }
-
-        /* --- Navigation --- */
-        nav {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 100;
-            background: rgba(26, 11, 46, 0.95);
-            border-bottom: 4px solid var(--header-color);
-        }
-
-        .logo {
-            font-family: 'Press Start 2P', cursive;
-            font-size: 1rem;
-            color: var(--accent-yellow);
-            text-shadow: 2px 2px 0 #ff2a6d;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
-        }
-
-        .nav-links a {
-            color: var(--accent-cyan);
-            text-decoration: none;
-            font-family: 'Press Start 2P', cursive;
-            font-size: 0.7rem; /* Smaller because this font is wide */
-            transition: color 0.2s;
-        }
-
-        .nav-links a:hover {
-            color: var(--accent-yellow);
-            animation: pulse 0.5s infinite;
-        }
-
-        /* --- Hero Section --- */
-        section {
-            padding: 6rem 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: row; /* Layout: Row for Desktop */
-            justify-content: space-between; /* Space between text and image */
-            align-items: center;
-            padding-top: 0;
-            gap: 2rem;
-        }
-
-        .hero-text {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
-        .hero-profile {
-            flex: 0 0 auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1.5rem;
-        }
-
-        .profile-frame {
-            width: 350px;
-            height: 350px;
-            border: 4px solid var(--accent-cyan);
-            background: #000;
-            position: relative;
-            box-shadow: 8px 8px 0px rgba(0,0,0,0.5);
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000; /* Lifts image above the scanlines */
-        }
-
-        .profile-frame img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .download-btn {
-            background: transparent;
-            border: 2px solid var(--text-main);
-            color: var(--text-main);
-            padding: 10px 15px;
-            font-family: 'Press Start 2P', cursive;
-            font-size: 0.7rem;
-            text-decoration: none;
-            transition: all 0.2s;
-            box-shadow: 4px 4px 0px rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .download-btn:hover {
-            background: var(--text-main);
-            color: var(--bg-dark);
-            transform: translateY(2px);
-            box-shadow: 2px 2px 0px rgba(0,0,0,0.5);
-        }
-
-        .hero h1 {
-            font-size: clamp(2rem, 5vw, 4rem);
-            margin-bottom: 1rem;
-        }
-
-        .hero-subtitle {
-            font-size: 2rem;
-            color: var(--text-main);
-            margin-bottom: 2rem;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        /* Blinking Block Cursor */
-        .cursor {
-            display: inline-block;
-            width: 20px;
-            height: 1em;
-            background-color: var(--accent-cyan);
-            animation: blink 0.8s step-end infinite;
-        }
-
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
-
-        .cta-btn {
-            display: inline-block;
-            padding: 15px 25px;
-            background: var(--header-color);
-            border-bottom: 6px solid #b0003a; /* Darker pink for 3D effect */
-            color: white;
-            border-radius: 6px;
-            text-decoration: none;
-            font-family: 'Press Start 2P', cursive;
-            font-size: 0.8rem;
-            transition: all 0.1s;
-            margin-top: 2rem;
-            text-shadow: 1px 1px 0 #000;
-            cursor: pointer;
-            border-left: none;
-            border-right: none;
-            border-top: none;
-        }
-
-        .cta-btn:hover {
-            transform: translateY(4px);
-            border-bottom: 2px solid #b0003a;
-            filter: brightness(1.1);
-        }
-
-        /* --- Section Styling --- */
-        .section-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 4rem;
-            border-bottom: 4px dashed var(--accent-cyan);
-            padding-bottom: 20px;
-        }
-
-        .section-header h2 {
-            font-size: 1.5rem;
-            margin-right: 20px;
-        }
-
-        /* --- Skills Grid --- */
-        .skills-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 2rem;
-        }
-
-        .skill-card {
-            background: #241245;
-            border: 4px solid var(--accent-yellow);
-            padding: 1.5rem;
-            text-align: center;
-            transition: all 0.2s;
-            box-shadow: 6px 6px 0px 0px rgba(0,0,0,0.5);
-        }
-
-        .skill-card:hover {
-            transform: translate(-4px, -4px);
-            box-shadow: 10px 10px 0px 0px var(--accent-cyan);
-            background: #331a5e;
-        }
-
-        .skill-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            color: var(--header-color);
-            text-shadow: 2px 2px 0 #000;
-        }
-
-        .skill-card h3 {
-            font-family: 'VT323', monospace;
-            font-size: 1.8rem;
-            color: var(--accent-yellow);
-            text-shadow: none;
-        }
-
-        /* --- Projects --- */
-        .projects-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 3rem;
-        }
-
-        .project-card {
-            background: #241245;
-            border: 4px solid var(--header-color);
-            padding: 2rem;
-            position: relative;
-            box-shadow: 8px 8px 0px 0px rgba(0,0,0,0.5);
-            transition: transform 0.2s;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .project-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 8px 12px 0px 0px var(--accent-yellow);
-        }
-
-        .project-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            border-bottom: 2px dotted var(--text-main);
-            padding-bottom: 15px;
-        }
-
-        .folder-icon {
-            font-size: 2rem;
-            color: var(--accent-cyan);
-        }
-
-        .project-links a {
-            color: var(--text-main);
-            font-size: 1.5rem;
-            margin-left: 1rem;
-            transition: color 0.2s;
-        }
-
-        .project-links a:hover {
-            color: var(--accent-yellow);
-        }
-
-        .project-title {
-            font-size: 1rem; /* Press Start 2P is big */
-            margin-bottom: 1rem;
-            color: var(--accent-yellow);
-        }
-
-        .project-desc {
-            color: #d1d1d1;
-            font-size: 1.3rem;
-            margin-bottom: 1.5rem;
-            font-family: 'VT323', monospace;
-            text-shadow: none;
-            flex-grow: 1;
-        }
-
-        .project-tech {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            font-size: 1.1rem;
-            color: var(--accent-cyan);
-            font-family: 'VT323', monospace;
-        }
-
-        .project-select-btn {
-            background: transparent;
-            border: 2px solid var(--accent-orange);
-            color: var(--accent-orange);
-            padding: 8px 16px;
-            font-family: 'Press Start 2P', cursive;
-            font-size: 0.6rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-top: 20px;
-            text-align: center;
-        }
-
-        .project-select-btn:hover {
-            background: var(--accent-orange);
-            color: #1a0b2e;
-            box-shadow: 0 0 10px var(--accent-orange);
-        }
-
-        /* --- Modal Styling --- */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            z-index: 2000;
-            display: none; /* Hidden by default */
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(5px);
-        }
-
-        .modal-content {
-            background: var(--bg-dark);
-            border: 4px solid var(--accent-orange);
-            box-shadow: 0 0 20px var(--accent-orange);
-            padding: 2rem;
-            max-width: 800px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-            position: relative;
-            animation: slideDown 0.3s ease-out;
-            display: flex;
-            flex-direction: column;
-        }
-
-        @keyframes slideDown {
-            from { transform: translateY(-50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .close-btn {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            background: transparent;
-            border: none;
-            color: var(--header-color);
-            font-family: 'Press Start 2P', cursive;
-            font-size: 1.5rem;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        .close-btn:hover {
-            color: var(--text-main);
-            transform: scale(1.2);
-        }
-
-        /* --- Carousel Styling --- */
-        .carousel-container {
-            position: relative;
-            width: 100%;
-            min-height: 300px; /* Use min-height to allow growth */
-            height: auto;      /* Allow container to wrap content */
-            margin: 1.5rem 0;
-            background: #000;
-            border: 2px solid var(--accent-cyan);
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .carousel-slide {
-            display: none;
-            width: 100%;
-            min-height: 300px; /* Ensure slides have minimum height */
-            /* Styling for text placeholders (REMOVE if using real images) */
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: var(--accent-cyan);
-            font-family: 'Press Start 2P', cursive;
-            font-size: 0.8rem;
-            text-align: center;
-            background: radial-gradient(circle, #1a0b2e 0%, #000 100%);
-        }
-
-        .carousel-slide img {
-            width: 100%;
-            height: auto;      /* Natural height */
-            max-height: 60vh;  /* Limit max height */
-            object-fit: contain; /* Ensure whole image fits */
-            display: block;    /* Remove bottom gap */
-        }
-
-        /* Video Support */
-        .carousel-slide iframe,
-        .carousel-slide video {
-            width: 100%;
-            height: 100%;
-            min-height: 300px;
-            border: none;
-        }
-
-        .carousel-slide.active {
-            display: flex;
-        }
-
-        .carousel-btn {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(26, 11, 46, 0.7);
-            color: var(--accent-yellow);
-            border: 2px solid var(--accent-yellow);
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 5px 10px;
-            z-index: 10;
-            transition: 0.2s;
-            font-family: 'Press Start 2P', cursive;
-        }
-
-        .carousel-btn:hover {
-            background: var(--accent-yellow);
-            color: #000;
-        }
-
-        .carousel-btn.prev { left: 10px; }
-        .carousel-btn.next { right: 10px; }
-
-        .modal-links {
-            display: flex;
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        /* --- Flashing Animation Class --- */
-        .flash-effect {
-            animation: blink 0.8s step-end infinite;
-        }
-
-        /* --- Contact --- */
-        .contact {
-            text-align: center;
-            margin-bottom: 5rem;
-        }
-
-        .contact p {
-            color: var(--text-main);
-            max-width: 600px;
-            margin: 0 auto 2rem;
-            font-size: 1.5rem;
-        }
-
-        .social-links {
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-            margin-top: 2rem;
-        }
-
-        .social-icon {
-            color: var(--accent-cyan);
-            font-size: 2.5rem;
-            transition: all 0.2s;
-        }
-
-        .social-icon:hover {
-            color: var(--header-color);
-            transform: scale(1.2) rotate(5deg);
-        }
-
-        /* --- Footer --- */
-        footer {
-            text-align: center;
-            padding: 3rem;
-            font-size: 0.8rem;
-            color: var(--accent-yellow);
-            border-top: 4px solid var(--accent-orange);
-            background: #11061f;
-            font-family: 'Press Start 2P', cursive;
-            line-height: 2;
-        }
-
-        /* --- Arcade Game Styling --- */
-        #arcade-container {
-            width: 100%;
-            height: 350px;
-            background: #000;
-            border: 4px solid var(--accent-cyan);
-            position: relative;
-            overflow: hidden;
-            box-shadow: 8px 8px 0px rgba(0,0,0,0.5);
-        }
-
-        #arcade-canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-        }
-
-        #arcade-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            z-index: 10;
-            text-align: center;
-        }
-
-        #arcade-score {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            color: var(--text-main);
-            font-family: 'Press Start 2P', cursive;
-            font-size: 0.8rem;
-            pointer-events: none;
-            display: none;
-        }
-
-        @media (max-width: 768px) {
-            .nav-links {
-                display: none;
-            }
-            .hero {
-                flex-direction: column;
-                justify-content: center;
-                text-align: center;
-            }
-            .hero-text {
-                align-items: center;
-            }
-            .hero h1 {
-                font-size: 1.8rem; /* Adjusted for mobile */
-            }
-            .modal-content {
-                width: 95%;
-                padding: 1rem;
-            }
-            .carousel-container {
-                min-height: 200px; /* Smaller carousel on mobile */
-            }
-            /* Stack the about grid on mobile */
-            #about > div {
-                grid-template-columns: 1fr !important;
-            }
+        a { color: inherit; text-decoration: none; }
+        img { max-width: 100%; display: block; }
+        ::selection { background: rgba(143,220,160,0.25); }
+        kbd { font-family: inherit; font-size: 0.72rem; border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; color: var(--muted); background: var(--bg); }
+
+        /* ---- Title bar ---- */
+        .titlebar { position: fixed; top: 0; left: 0; right: 0; height: var(--titlebar-h); z-index: 200;
+            display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+            padding: 0 0.8rem; background: var(--panel); border-bottom: 1px solid var(--border); }
+        .tb-left { display: flex; align-items: center; gap: 0.8rem; min-width: 0; }
+        .tb-dots { display: flex; gap: 0.45rem; }
+        .tb-dots i { width: 12px; height: 12px; border-radius: 50%; }
+        .tb-dots i:nth-child(1){ background:#e0a3a3; } .tb-dots i:nth-child(2){ background:#d8c9a3; } .tb-dots i:nth-child(3){ background:#8fdca0; }
+        .tb-title { color: var(--muted); font-size: 0.82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .tb-title b { color: var(--text); font-weight: 600; }
+        .cmdk-btn { display: flex; align-items: center; gap: 0.6rem; background: var(--bg); border: 1px solid var(--border); color: var(--muted);
+            border-radius: 7px; padding: 0.32rem 0.7rem; font-family: inherit; font-size: 0.8rem; cursor: pointer; transition: border-color 0.2s, color 0.2s; }
+        .cmdk-btn:hover { border-color: var(--green); color: var(--text); }
+        .hamburger { display: none; background: none; border: 1px solid var(--border); color: var(--text); width: 32px; height: 30px; border-radius: 6px; cursor: pointer; }
+
+        /* ---- Activity bar ---- */
+        .activitybar { position: fixed; top: var(--titlebar-h); bottom: var(--status-h); left: 0; width: var(--activity-w); z-index: 150;
+            background: var(--bg-2); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding-top: 0.6rem; gap: 0.3rem; }
+        .act { width: 40px; height: 40px; display: grid; place-items: center; color: var(--muted); font-size: 1.15rem; border-left: 2px solid transparent; cursor: pointer; background: none; border-right: 0; border-top: 0; border-bottom: 0; transition: color 0.2s; }
+        .act:hover { color: var(--text); }
+        .act.active { color: var(--green); border-left-color: var(--green); }
+        .act.bottom { margin-top: auto; }
+
+        /* ---- Sidebar (explorer) ---- */
+        .sidebar { position: fixed; top: var(--titlebar-h); bottom: var(--status-h); left: var(--activity-w); width: var(--sidebar-w); z-index: 140;
+            background: var(--panel); border-right: 1px solid var(--border); overflow-y: auto; transition: transform 0.25s ease; }
+        .sb-head { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); padding: 0.9rem 1rem 0.5rem; }
+        .tree { padding-bottom: 1rem; font-size: 0.86rem; }
+        .tree-row { display: flex; align-items: center; gap: 0.5rem; padding: 0.28rem 0.8rem; color: var(--text); cursor: pointer; white-space: nowrap; border-left: 2px solid transparent; }
+        .tree-row:hover { background: var(--surface); }
+        .tree-row.file.active { background: var(--surface-2); border-left-color: var(--green); color: var(--green); }
+        .tree-row .chev { font-size: 0.7rem; color: var(--muted); width: 10px; transition: transform 0.18s; }
+        .tree-row.folder.collapsed .chev { transform: rotate(-90deg); }
+        .ic { width: 16px; text-align: center; font-size: 0.85rem; }
+        .ic.md { color: var(--mint); } .ic.folder { color: var(--sand); } .ic.pdf { color: #e0a3a3; }
+        .tree-children { overflow: hidden; }
+        .tree-children.collapsed { display: none; }
+        .indent { padding-left: 1.7rem; }
+        .indent2 { padding-left: 2.6rem; }
+
+        /* ---- Editor / main ---- */
+        .editor { margin: var(--titlebar-h) 0 var(--status-h) calc(var(--activity-w) + var(--sidebar-w)); min-height: calc(100vh - var(--titlebar-h) - var(--status-h));
+            background:
+                radial-gradient(800px 460px at 75% -10%, rgba(143,220,160,0.05), transparent 70%),
+                linear-gradient(var(--bg), var(--bg-2)); }
+        .tabbar { position: sticky; top: var(--titlebar-h); z-index: 90; display: flex; background: var(--bg-2); border-bottom: 1px solid var(--border); }
+        .tab { display: flex; align-items: center; gap: 0.5rem; padding: 0.55rem 1rem; font-size: 0.82rem; color: var(--text);
+            background: var(--surface); border-right: 1px solid var(--border); border-top: 2px solid var(--green); }
+        .tab .ic { color: var(--mint); }
+        section { max-width: 680px; margin: 0 auto; padding: 3.5rem 1.5rem; }
+        .pr { color: var(--prompt); margin-right: 0.5rem; }
+        .muted { color: var(--muted); }
+
+        /* Welcome / hero */
+        .hero { padding-top: 4.5rem; }
+        .name { font-size: clamp(1.9rem, 6vw, 3rem); font-weight: 700; color: var(--green); letter-spacing: -0.01em; line-height: 1.1; margin: 0.3rem 0; }
+        .role { color: var(--mint); }
+        .out { color: var(--text); margin: 0.1rem 0 1rem; }
+        .cursor { display: inline-block; width: 9px; height: 1.05em; background: var(--green); transform: translateY(2px); animation: blink 1.1s step-end infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+        .pending { opacity: 0; }
+        .pending.show { opacity: 1; transition: opacity 0.35s ease; }
+        .links-row { display: flex; flex-wrap: wrap; gap: 0.7rem; margin-top: 1.2rem; }
+        .tbtn { border: 1px solid var(--border); color: var(--text); padding: 0.5rem 0.9rem; border-radius: 7px; font-size: 0.88rem; transition: all 0.18s ease; display: inline-block; cursor: pointer; background: none; font-family: inherit; }
+        .tbtn::before { content: "./"; color: var(--prompt); }
+        .tbtn.nofile::before { content: ""; }
+        .tbtn:hover { border-color: var(--green); color: var(--green); transform: translateY(-2px); background: rgba(143,220,160,0.06); }
+
+        .sec-head { font-size: 1.15rem; font-weight: 600; color: var(--muted); margin-bottom: 1.6rem; }
+        .sec-head b { color: var(--green); font-weight: 600; }
+
+        /* About */
+        .about { display: block; }
+        .avatar { width: 130px; height: 130px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); filter: grayscale(0.25); margin-bottom: 1.4rem; }
+        .about p { margin-bottom: 0.9rem; }
+        .about p:last-child { margin-bottom: 0; }
+        .about-info { margin-top: 1.15rem; }
+        .about-info p { margin-bottom: 0.4rem; }
+        .about-info p:last-child { margin-bottom: 0; }
+        .about-info .k { color: var(--prompt); }
+
+        /* Resume timeline */
+        .timeline { position: relative; padding-left: 1.4rem; }
+        .timeline::before { content: ""; position: absolute; left: 4px; top: 7px; bottom: 7px; width: 2px; background: var(--border); }
+        .tl-item { position: relative; margin-bottom: 1.4rem; }
+        .tl-item:last-child { margin-bottom: 0; }
+        .tl-item::before { content: ""; position: absolute; left: -1.4rem; top: 6px; width: 9px; height: 9px; border-radius: 50%; background: var(--bg); border: 2px solid var(--green); }
+        .tl-row { display: flex; justify-content: space-between; gap: 0.8rem; align-items: baseline; flex-wrap: wrap; }
+        .tl-role { color: var(--text); font-weight: 600; font-size: 0.96rem; }
+        .tl-date { color: var(--muted); font-size: 0.8rem; white-space: nowrap; }
+        .tl-sub { font-size: 0.85rem; margin-top: 0.1rem; }
+        .tl-co { color: var(--green); }
+        .tl-sub .loc { color: var(--muted); }
+        .tl-desc { color: var(--muted); font-size: 0.85rem; margin-top: 0.3rem; }
+        .resume-cta { margin-top: 1.3rem; }
+
+        /* Projects */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.1rem; }
+        .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; cursor: pointer; transition: transform 0.22s ease, border-color 0.22s ease; }
+        .card:hover { transform: translateY(-5px); border-color: var(--green); }
+        .card:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+        .thumb { aspect-ratio: 16/9; overflow: hidden; border-bottom: 1px solid var(--border); background: var(--surface-2); }
+        .thumb img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(0.35) brightness(0.92); transition: transform 0.45s ease, filter 0.3s ease; }
+        .card:hover .thumb img { transform: scale(1.05); filter: none; }
+        .thumb.noimg { display: grid; place-items: center; color: var(--prompt); font-size: 1.8rem; filter: none; }
+        .card-b { padding: 1rem 1.05rem 1.2rem; display: flex; flex-direction: column; flex-grow: 1; }
+        .card-top { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.35rem; }
+        .fname { color: var(--muted); font-size: 0.82rem; }
+        .fname::before { content: "~/"; color: var(--prompt); }
+        .award { color: var(--sand); font-size: 0.72rem; border: 1px solid var(--border); padding: 0.1rem 0.45rem; border-radius: 5px; white-space: nowrap; }
+        .card-b h3 { font-size: 1.02rem; color: var(--green); margin-bottom: 0.35rem; }
+        .card-b p { color: var(--muted); font-size: 0.86rem; flex-grow: 1; }
+        .tags { display: flex; flex-wrap: wrap; gap: 0.4rem 0.6rem; margin: 0.85rem 0 0; font-size: 0.76rem; color: var(--mint); }
+        .card-hint { margin-top: 0.85rem; font-size: 0.8rem; color: var(--prompt); }
+        .card-hint::before { content: "› "; }
+        .card:hover .card-hint { color: var(--green); }
+
+        /* Contact */
+        .contact-box { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem clamp(1.1rem,3vw,1.8rem); }
+        .clist { list-style: none; margin-top: 0.8rem; display: flex; flex-direction: column; gap: 0.55rem; }
+        .clist li { display: flex; gap: 1rem; align-items: baseline; }
+        .clist .k { color: var(--prompt); min-width: 84px; }
+        .clist a { color: var(--text); border-bottom: 1px dotted var(--border); transition: color 0.2s, border-color 0.2s; }
+        .clist a:hover { color: var(--green); border-color: var(--green); }
+        .copy { background: none; border: none; color: var(--muted); cursor: pointer; font-family: inherit; font-size: 0.82rem; transition: color 0.2s; margin-left: auto; }
+        .copy:hover { color: var(--green); }
+
+        footer { padding: 2.5rem 1.5rem; text-align: center; color: var(--muted); font-size: 0.82rem; }
+
+        /* ---- Status bar ---- */
+        .statusbar { position: fixed; left: 0; right: 0; bottom: 0; height: var(--status-h); z-index: 200;
+            display: flex; align-items: center; justify-content: space-between; padding: 0 0.9rem;
+            background: var(--surface-2); border-top: 1px solid var(--border); color: var(--muted); font-size: 0.74rem; }
+        .statusbar .seg { display: flex; align-items: center; gap: 1rem; }
+        .statusbar .accent { color: var(--green); }
+
+        /* Reveal */
+        .reveal { opacity: 0; transform: translateY(16px); transition: opacity 0.6s ease, transform 0.6s ease; }
+        .reveal.in { opacity: 1; transform: none; }
+
+        /* ---- Project modal + carousel ---- */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(5,8,6,0.8); backdrop-filter: blur(6px); z-index: 500; display: none; align-items: center; justify-content: center; padding: 1.2rem; }
+        .modal-overlay.open { display: flex; }
+        .modal { width: 100%; max-width: 760px; max-height: 88vh; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); display: flex; flex-direction: column; overflow: hidden; animation: modalIn 0.25s ease; }
+        @keyframes modalIn { from { opacity: 0; transform: translateY(14px) scale(0.99); } to { opacity: 1; transform: none; } }
+        .modal-bar { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; padding: 0.7rem 1rem; background: var(--surface-2); border-bottom: 1px solid var(--border); }
+        .modal-path { color: var(--muted); font-size: 0.82rem; }
+        .modal-close { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1rem; transition: color 0.2s; }
+        .modal-close:hover { color: var(--green); }
+        .modal-body { padding: 1.3rem clamp(1.1rem,3vw,1.6rem) 1.6rem; overflow-y: auto; }
+        .modal-body h3 { color: var(--green); font-size: 1.2rem; margin-bottom: 0.5rem; }
+        .modal-desc { color: var(--text); font-size: 0.9rem; margin-bottom: 0.9rem; }
+        .modal .tags { margin: 0 0 1.1rem; }
+        .modal-links { display: flex; gap: 0.8rem; flex-wrap: wrap; }
+        .mbtn { border: 1px solid var(--border); color: var(--text); padding: 0.45rem 0.85rem; border-radius: 7px; font-size: 0.84rem; transition: all 0.18s ease; }
+        .mbtn:hover { border-color: var(--green); color: var(--green); background: rgba(143,220,160,0.06); }
+        .carousel { position: relative; background: #000; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 1.1rem; }
+        .slide { display: none; } .slide.active { display: block; }
+        .slide img { width: 100%; max-height: 56vh; object-fit: contain; background: #000; }
+        .slide .frame { position: relative; width: 100%; aspect-ratio: 16/9; }
+        .slide .frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+        .cbtn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(13,16,14,0.72); color: var(--green); border: 1px solid var(--border); width: 34px; height: 34px; border-radius: 7px; cursor: pointer; font-size: 1.1rem; display: grid; place-items: center; }
+        .cbtn:hover { background: rgba(143,220,160,0.14); border-color: var(--green); }
+        .cbtn.prev { left: 8px; } .cbtn.next { right: 8px; }
+        .cdots { display: flex; gap: 6px; justify-content: center; padding: 8px; background: var(--surface-2); }
+        .cdots i { width: 7px; height: 7px; border-radius: 50%; background: var(--border); cursor: pointer; }
+        .cdots i.active { background: var(--green); }
+        body.modal-open { overflow: hidden; }
+
+        /* ---- Command palette ---- */
+        .palette-overlay { position: fixed; inset: 0; background: rgba(5,8,6,0.55); backdrop-filter: blur(3px); z-index: 600; display: none; justify-content: center; align-items: flex-start; padding-top: 12vh; }
+        .palette-overlay.open { display: flex; }
+        .palette { width: 100%; max-width: 560px; background: var(--surface); border: 1px solid var(--border); border-radius: 11px; box-shadow: var(--shadow); overflow: hidden; animation: modalIn 0.18s ease; }
+        .palette-input-wrap { display: flex; align-items: center; gap: 0.6rem; padding: 0.85rem 1rem; border-bottom: 1px solid var(--border); }
+        .palette-input-wrap .pr { margin: 0; }
+        #paletteInput { flex: 1; background: none; border: none; outline: none; color: var(--text); font-family: inherit; font-size: 0.95rem; }
+        #paletteList { list-style: none; max-height: 320px; overflow-y: auto; padding: 0.4rem; }
+        #paletteList li { display: flex; align-items: center; gap: 0.7rem; padding: 0.55rem 0.7rem; border-radius: 7px; color: var(--text); cursor: pointer; font-size: 0.88rem; }
+        #paletteList li .cat { color: var(--muted); font-size: 0.74rem; margin-left: auto; }
+        #paletteList li .ic { color: var(--mint); }
+        #paletteList li.sel, #paletteList li:hover { background: var(--surface-2); }
+        #paletteList li.sel { outline: 1px solid var(--green); }
+        #paletteList .empty { color: var(--muted); padding: 0.6rem 0.7rem; }
+
+        /* Toast */
+        #toast { position: fixed; bottom: calc(var(--status-h) + 14px); right: 16px; z-index: 650; background: var(--surface); border: 1px solid var(--green); color: var(--green); padding: 0.55rem 0.9rem; border-radius: 8px; font-size: 0.84rem; box-shadow: var(--shadow); opacity: 0; transform: translateY(8px); transition: opacity 0.25s, transform 0.25s; pointer-events: none; }
+        #toast.show { opacity: 1; transform: none; }
+
+        @media (max-width: 860px) {
+            :root { --sidebar-w: 230px; }
+            .hamburger { display: grid; place-items: center; }
+            .activitybar { display: none; }
+            .sidebar { left: 0; transform: translateX(-100%); box-shadow: var(--shadow); }
+            .sidebar.open { transform: translateX(0); }
+            .editor { margin-left: 0; }
+            .about { grid-template-columns: 1fr; }
+            .statusbar .seg.hide-sm { display: none; }
+            .cmdk-btn .label { display: none; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            * { animation: none !important; scroll-behavior: auto; }
+            .reveal { opacity: 1; transform: none; transition: none; }
+            .pending { opacity: 1; }
         }
     </style>
 </head>
 <body>
-
-<!-- Background Animation -->
-<canvas id="bg-canvas"></canvas>
-
-<!-- Navigation -->
-<nav>
-    <div class="logo">PLAYER_1: Christopher Chen</div>
-    <ul class="nav-links">
-        <li><a href="#about">ABOUT</a></li>
-        <li><a href="#skills">SKILLS</a></li>
-        <li><a href="#projects">PROJECTS</a></li>
-        <li><a href="#contact">CONTACT</a></li>
-    </ul>
-</nav>
-
-<!-- Hero Section -->
-<section class="hero" id="home">
-    <!-- Left Column: Text -->
-    <div class="hero-text">
-        <p class="arcade-font flash-effect" style="color: var(--accent-cyan); font-size: 0.8rem; margin-bottom: 1rem;">INSERT COIN TO START</p>
-        <h1>Christopher Chen</h1>
-        <div class="hero-subtitle">
-            <span style="color: var(--accent-orange); font-family: 'Press Start 2P', cursive; font-size: 1rem;">SELECT CLASS:</span>
-            <span id="typewriter" style="color: white; font-family: 'VT323', monospace; font-size: 2rem; margin-left: 10px;"></span><span class="cursor"></span>
+    <!-- Title bar -->
+    <header class="titlebar">
+        <div class="tb-left">
+            <span class="tb-dots"><i></i><i></i><i></i></span>
+            <button class="hamburger" id="hamburger" aria-label="Toggle explorer"><i class="fa-solid fa-bars"></i></button>
+            <span class="tb-title"><b>christopher-chen</b> — portfolio</span>
         </div>
-        <p style="max-width: 600px; color: #ddd; margin-bottom: 2rem; font-size: 1.5rem;">
-            Welcome to my website!<br>
-            Check out a bit about me below.
-        </p>
-        <a href="#projects" class="cta-btn">PRESS START</a>
-    </div>
+        <button class="cmdk-btn" id="cmdkBtn" aria-label="Open command palette">
+            <i class="fa-solid fa-magnifying-glass"></i><span class="label">search commands…</span> <kbd>⌘K</kbd>
+        </button>
+    </header>
 
-    <!-- Right Column: Profile & Download -->
-    <div class="hero-profile">
-        <div class="profile-frame">
-            <!-- REPLACE 'assets/profile.jpg' WITH YOUR LOCAL IMAGE FILE -->
-            <img src="photos/profile.png" alt="Christopher Chen Profile">
-        </div>
-        <!-- REPLACE 'assets/resume.pdf' WITH YOUR LOCAL CV FILE -->
-        <a href="photos/ChristopherChenResume.pdf" class="download-btn" download>
-            DOWNLOAD CV <i class="fa-solid fa-file-arrow-down"></i>
-        </a>
-    </div>
-</section>
+    <!-- Activity bar -->
+    <nav class="activitybar" aria-label="Activity bar">
+        <button class="act active" title="Explorer" aria-label="Explorer"><i class="fa-regular fa-copy"></i></button>
+        <button class="act" id="cmdkAct" title="Command Palette (⌘K)" aria-label="Command palette"><i class="fa-solid fa-terminal"></i></button>
+        <a class="act" href="https://github.com/04christopher" target="_blank" rel="noopener" title="GitHub"><i class="fa-brands fa-github"></i></a>
+        <a class="act" href="https://www.linkedin.com/in/christopher-chen-027b161ba/" target="_blank" rel="noopener" title="LinkedIn"><i class="fa-brands fa-linkedin"></i></a>
+        <a class="act bottom" href="photos/ChristopherChenResume.pdf" download title="Résumé (PDF)"><i class="fa-solid fa-file-arrow-down"></i></a>
+    </nav>
 
-<!-- About Section -->
-<section id="about">
-    <div class="section-header">
-        <h2>ABOUT ME</h2>
-    </div>
-    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 50px; align-items: start;">
-        <div style="color: var(--text-main);">
-            <p style="margin-bottom: 15px;">
-                Hey! I'm Christopher, a 3rd year student currently majoring in Computer Science, BS, at the University of British Columbia (UBC)!
-            </p>
-            <p style="margin-bottom: 15px;">
-                My last internship was at <a href="https://jostle.me" target="_blank" style="color: var(--accent-cyan); text-decoration: none; border-bottom: 1px dashed var(--accent-cyan);">Jostle</a>,
-                where I worked on client facing library and chat features, including our customer facing RAG conversational AI and search. Previously, I've also been employed at Canada Post and Mc Donald's.
-            </p>
-            <p style="margin-bottom: 15px;">
-                At school, I'm particularly drawn to math, algorithms, and ML work, but I love working with any technology to solve a problem.
-                I'm also an executive at UBC ESports Association and a volunteer at GIRLsmarts4tech, where I teach workshops for high-school students.
-            </p>
-            <p>
-                Outside of school, I love active living including playing basketball, hiking, skiing and skating, and skateboarding.
-                I also play piano and all three saxophones (alto, tenor, berry) and enjoy playing all sorts of games (especially puzzle games) and watching TV shows and movies. I have a very long watchlist! (Ask me about anything.)
-            </p>
-        </div>
-
-        <!-- Arcade Game Box -->
-        <div style="position: relative;">
-            <div id="arcade-container">
-                <canvas id="arcade-canvas"></canvas>
-                <div id="arcade-overlay" onclick="startArcadeGame()">
-                    <p class="arcade-font" style="font-size: 1.2rem; color: var(--accent-yellow); margin-bottom: 10px;">ASTEROIDS</p>
-                    <p class="mono" style="font-size: 1.2rem;">CLICK TO START</p>
-                    <p class="mono" style="font-size: 0.9rem; color: #aaa; margin-top: 10px;">ARROWS: Move<br>SPACE: Shoot</p>
+    <!-- Sidebar / explorer -->
+    <aside class="sidebar" id="sidebar" aria-label="Explorer">
+        <div class="sb-head">Explorer</div>
+        <div class="tree" id="tree">
+            <div class="tree-row folder" data-folder="root"><i class="fa-solid fa-chevron-down chev"></i><i class="fa-solid fa-folder-open ic folder"></i> PORTFOLIO</div>
+            <div class="tree-children" id="rootChildren">
+                <a class="tree-row file indent" data-target="home"><i class="fa-regular fa-file-lines ic md"></i> welcome.md</a>
+                <a class="tree-row file indent" data-target="resume"><i class="fa-regular fa-file-lines ic md"></i> resume.md</a>
+                <a class="tree-row file indent" data-target="about"><i class="fa-regular fa-file-lines ic md"></i> about.md</a>
+                <div class="tree-row folder indent collapsed" data-folder="projects"><i class="fa-solid fa-chevron-down chev"></i><i class="fa-solid fa-folder ic folder"></i> projects</div>
+                <div class="tree-children collapsed" id="projChildren">
+                    <a class="tree-row file indent2 proj" data-proj="basketbot"><i class="fa-regular fa-file-code ic md"></i> basketbot.md</a>
+                    <a class="tree-row file indent2 proj" data-proj="mindful-motion"><i class="fa-regular fa-file-code ic md"></i> mindful-motion.md</a>
+                    <a class="tree-row file indent2 proj" data-proj="ultrasound-ml"><i class="fa-regular fa-file-code ic md"></i> ultrasound-ml.md</a>
+                    <a class="tree-row file indent2 proj" data-proj="campus-explorer"><i class="fa-regular fa-file-code ic md"></i> campus-explorer.md</a>
+                    <a class="tree-row file indent2 proj" data-proj="amongus-db"><i class="fa-regular fa-file-code ic md"></i> amongus-db.md</a>
+                    <a class="tree-row file indent2 proj" data-proj="avoid-cats"><i class="fa-regular fa-file-code ic md"></i> avoid-cats.md</a>
                 </div>
-                <div id="arcade-score">SCORE: 0</div>
+                <a class="tree-row file indent" data-target="contact"><i class="fa-regular fa-file-lines ic md"></i> contact.md</a>
+                <a class="tree-row file indent dl" href="photos/ChristopherChenResume.pdf" download><i class="fa-regular fa-file-pdf ic pdf"></i> resume.pdf</a>
             </div>
         </div>
-    </div>
-</section>
+    </aside>
 
-<!-- Skills Section -->
-<section id="skills">
-    <div class="section-header">
-        <h2>INVENTORY</h2>
-    </div>
-    <div class="skills-grid">
-        <div class="skill-card">
-            <i class="fa-brands fa-java skill-icon"></i>
-            <h3>Java</h3>
-        </div>
-        <div class="skill-card">
-            <i class="fa-brands fa-python skill-icon"></i>
-            <h3>Python</h3>
-        </div>
-        <div class="skill-card">
-            <i class="fa-solid fa-code skill-icon"></i>
-            <h3>C/C++</h3>
-        </div>
-        <div class="skill-card">
-            <i class="fa-brands fa-js skill-icon"></i>
-            <h3>JavaScript</h3>
-        </div>
-        <div class="skill-card">
-            <i class="fa-brands fa-html5 skill-icon"></i>
-            <h3>HTML/CSS</h3>
-        </div>
-        <div class="skill-card">
-            <i class="fa-brands fa-git-alt skill-icon"></i>
-            <h3>Git</h3>
-        </div>
-        <div class="skill-card">
-            <i class="fa-solid fa-database skill-icon"></i>
-            <h3>SQL</h3>
-        </div>
-        <div class="skill-card">
-            <i class="fa-brands fa-docker skill-icon"></i>
-            <h3>Docker</h3>
-        </div>
-        <div class="skill-card">
-            <i class="fa-solid fa-window-maximize skill-icon"></i>
-            <h3>Selenium</h3>
-        </div>
-        <div class="skill-card">
-            <i class="fa-solid fa-eye skill-icon"></i>
-            <h3>OpenCV</h3>
-        </div>
-        <div class="skill-card">
-            <i class="fa-solid fa-cube skill-icon"></i>
-            <h3>Blender</h3>
-        </div>
-        <div class="skill-card">
-            <i class="fa-solid fa-rocket skill-icon"></i>
-            <h3>Godot</h3>
-        </div>
-    </div>
-</section>
+    <!-- Editor / main -->
+    <main class="editor">
+        <div class="tabbar"><span class="tab"><i class="fa-regular fa-file-lines ic"></i> <span id="activeTab">welcome.md</span></span></div>
 
-<!-- Projects Section -->
-<section id="projects">
-    <div class="section-header">
-        <h2>SOME THINGS I'VE DONE</h2>
-    </div>
-    <div class="projects-grid">
-        <!-- Project 1 -->
-        <div class="project-card">
-            <div class="project-top">
-                <i class="fa-solid fa-ghost folder-icon" style="color: var(--header-color);"></i>
-                <div class="project-links">
-                    <a href="https://github.com/troy-wu/team1" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-github"></i></a>
-                    <!--                    <a href="#"><i class="fa-solid fa-up-right-from-square"></i></a>-->
+        <!-- Welcome / hero -->
+        <section class="hero" id="home" data-file="welcome.md">
+            <p class="line"><span class="pr">$</span><span id="cmd1"></span></p>
+            <div class="pending" id="out1">
+                <h1 class="name">Christopher Chen</h1>
+                <p class="out role">Computer Science @ UBC · Software Engineer</p>
+            </div>
+            <p class="line"><span class="pr">$</span><span id="cmd2"></span></p>
+            <p class="out pending muted" id="out2">Currently an SDE intern @ Amazon</p>
+            <p class="line"><span class="pr">$</span><span id="cmd3"></span><span class="cursor" id="heroCursor"></span></p>
+            <div class="pending" id="out3">
+                <div class="links-row">
+                    <a class="tbtn" href="photos/ChristopherChenResume.pdf" download>resume.pdf</a>
+                    <a class="tbtn nofile" href="https://github.com/04christopher" target="_blank" rel="noopener">github</a>
+                    <a class="tbtn nofile" href="https://www.linkedin.com/in/christopher-chen-027b161ba/" target="_blank" rel="noopener">linkedin</a>
+                    <a class="tbtn nofile" href="mailto:christopherchenpatrick@gmail.com">email</a>
                 </div>
             </div>
-            <h3 class="project-title">Mindful Motion</h3>
-            <p class="project-desc">
-                This project won 1st place at HelloHacks by using a camera to count your exercise reps and help you hold a yoga pose.
-            </p>
-            <div class="project-tech">
-                <span>OpenCV</span>
-                <span>Python</span>
-            </div>
-            <button class="project-select-btn" onclick="openModal('algo')">SELECT LEVEL</button>
-        </div>
+        </section>
 
-        <!-- Project 2 -->
-        <div class="project-card">
-            <div class="project-top">
-                <i class="fa-solid fa-basketball folder-icon" style="color: var(--accent-yellow);"></i>
-                <div class="project-links">
-                    <a href="https://github.com/04christopher/basketbot" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-github"></i></a>
+        <!-- Resume -->
+        <section id="resume" data-file="resume.md">
+            <h2 class="sec-head reveal">// <b>resume</b></h2>
+            <div class="timeline reveal">
+                <div class="tl-item">
+                    <div class="tl-row"><span class="tl-role">Software Development Engineer Intern</span><span class="tl-date">May 2026 – Aug 2026</span></div>
+                    <div class="tl-sub"><span class="tl-co">Amazon</span> <span class="loc">· Vancouver, BC</span></div>
+                    <p class="tl-desc">Data pipeline capturing payment-preference selection metrics at checkout scale.</p>
+                </div>
+                <div class="tl-item">
+                    <div class="tl-row"><span class="tl-role">Software Engineer Intern</span><span class="tl-date">Jan 2025 – Sep 2025</span></div>
+                    <div class="tl-sub"><span class="tl-co">Jostle</span> <span class="loc">· Vancouver, BC</span></div>
+                    <p class="tl-desc">RAG evaluation and LLM localization tooling, plus an internal analytics dashboard.</p>
                 </div>
             </div>
-            <h3 class="project-title">BasketBot</h3>
-            <p class="project-desc">
-                This project won 1st place at ProduHacks by counting basketball score with a camera, and capturing speech for voice controls.
-            </p>
-            <div class="project-tech">
-                <span>OpenCV</span>
-                <span>Python</span>
-                <span>Vosk Speech Recognition</span>
-                <span>TensorFlow</span>
-            </div>
-            <button class="project-select-btn" onclick="openModal('chatbot')">SELECT LEVEL</button>
-        </div>
+            <div class="resume-cta reveal"><a class="tbtn" href="photos/ChristopherChenResume.pdf" download>resume.pdf</a></div>
+        </section>
 
-        <!-- Project 3 -->
-        <div class="project-card">
-            <div class="project-top">
-                <!-- CHANGED ICON TO ASTRONAUT (Among Us Crewmate) -->
-                <i class="fa-solid fa-user-astronaut folder-icon" style="color: var(--accent-orange);"></i>
-                <div class="project-links">
-                    <a href="https://github.com/04christopher/amongusDB" target="_blank" rel="noopener noreferrer"  ><i class="fa-brands fa-github"></i></a>
+        <!-- About -->
+        <section id="about" data-file="about.md">
+            <h2 class="sec-head reveal">// <b>about</b></h2>
+            <div class="about reveal">
+                <img class="avatar" src="photos/profile.png" alt="Christopher Chen">
+                <div>
+                    <p>- Software Development Engineer @ Amazon, previously @ Jostle. </p>
+                    <p>- 4th Year Computer Science Student @ University of British Columbia</p>
+                    <p>- Interests in algorithms, machine learning, and computer vision, with a focus on backend systems.</p>
+                    <p>- Workshop coordinator and presenter at GIRLsmarts4tech, teaching computer science materials to young students.</p>
+                    <p>- Vice President Administration for UBC Computer Science Student Society</p>
+                    <div class="about-info">
+                        <p><span class="k">expected graduation:</span> april 2027</p>
+                        <p><span class="k">coursework:</span> program design, data structures and algorithms, randomized algorithms, networking, operating systems, machine learning</p>
+                        <p><span class="k">internship availability:</span> fall 2026</p>
+                        <p><span class="k">new-grad availability:</span> summer 2027</p>
+                    </div>
                 </div>
             </div>
-            <h3 class="project-title">"Among Us" Database</h3>
-            <p class="project-desc">
-                This is a functional database that can represent the sequence of events of any Among Us Game.
-            </p>
-            <div class="project-tech">
-                <span>SQL</span>
-                <span>Oracle DB</span>
-                <span>JS</span>
-            </div>
-            <button class="project-select-btn" onclick="openModal('portfolio')">SELECT LEVEL</button>
-        </div>
+        </section>
 
-        <!-- Project 4 -->
-        <div class="project-card">
-            <div class="project-top">
-                <i class="fa-solid fa-map folder-icon" style="color: var(--accent-cyan);"></i>
-                <div class="project-links">
-                    <a href="https://github.com/04christopher/campus-explorer" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-github"></i></a>
-                    <!--                    <a href="#"><i class="fa-solid fa-up-right-from-square"></i></a>-->
+        <!-- Projects -->
+        <section id="projects" data-file="projects/">
+            <h2 class="sec-head reveal">// <b>projects</b></h2>
+            <div class="grid">
+                <article class="card reveal" data-proj="basketbot" tabindex="0" role="button" aria-label="Open BasketBot details">
+                    <div class="thumb"><img src="photos/basketbot.jpg" alt="BasketBot" loading="lazy"></div>
+                    <div class="card-b">
+                        <div class="card-top"><span class="fname">basketbot</span><span class="award">1st · ProduHacks</span></div>
+                        <h3>BasketBot</h3>
+                        <p>Camera-based basketball score tracking with voice controls and a trained net-detection model.</p>
+                        <div class="tags">[python] [opencv] [vosk] [tensorflow]</div>
+                        <div class="card-hint">details</div>
+                    </div>
+                </article>
+                <article class="card reveal" data-proj="mindful-motion" tabindex="0" role="button" aria-label="Open Mindful Motion details">
+                    <div class="thumb"><img src="photos/hellohacksscreen.jpg" alt="Mindful Motion" loading="lazy"></div>
+                    <div class="card-b">
+                        <div class="card-top"><span class="fname">mindful-motion</span><span class="award">1st · HelloHacks</span></div>
+                        <h3>Mindful Motion</h3>
+                        <p>Webcam rep counter and yoga-pose corrector using real-time motion detection.</p>
+                        <div class="tags">[python] [opencv] [flask]</div>
+                        <div class="card-hint">details</div>
+                    </div>
+                </article>
+                <article class="card reveal" data-proj="ultrasound-ml" tabindex="0" role="button" aria-label="Open Ultrasound Outcome Prediction details">
+                    <div class="thumb noimg"><i class="fa-solid fa-heart-pulse"></i></div>
+                    <div class="card-b">
+                        <div class="card-top"><span class="fname">ultrasound-ml</span></div>
+                        <h3>Ultrasound Outcome Prediction</h3>
+                        <p>ML models predicting live-birth outcomes from ultrasound biomarkers.</p>
+                        <div class="tags">[python] [scikit-learn] [pandas]</div>
+                        <div class="card-hint">details</div>
+                    </div>
+                </article>
+                <article class="card reveal" data-proj="campus-explorer" tabindex="0" role="button" aria-label="Open UBC Campus Explorer details">
+                    <div class="thumb"><img src="photos/campus%20explorer.png" alt="UBC Campus Explorer" loading="lazy"></div>
+                    <div class="card-b">
+                        <div class="card-top"><span class="fname">campus-explorer</span></div>
+                        <h3>UBC Campus Explorer</h3>
+                        <p>Search and locate rooms across campus with walking-distance estimates.</p>
+                        <div class="tags">[typescript] [express] [rest]</div>
+                        <div class="card-hint">details</div>
+                    </div>
+                </article>
+                <article class="card reveal" data-proj="amongus-db" tabindex="0" role="button" aria-label="Open Among Us Database details">
+                    <div class="thumb"><img src="photos/amongus%20ER%20diagram.png" alt="Among Us Database" loading="lazy"></div>
+                    <div class="card-b">
+                        <div class="card-top"><span class="fname">amongus-db</span></div>
+                        <h3>"Among Us" Database</h3>
+                        <p>Relational schema and query tool modelling a full Among Us match.</p>
+                        <div class="tags">[sql] [oracle] [js]</div>
+                        <div class="card-hint">details</div>
+                    </div>
+                </article>
+                <article class="card reveal" data-proj="avoid-cats" tabindex="0" role="button" aria-label="Open Avoid Cats details">
+                    <div class="thumb"><img src="photos/avoidcats.png" alt="Avoid Cats" loading="lazy"></div>
+                    <div class="card-b">
+                        <div class="card-top"><span class="fname">avoid-cats</span></div>
+                        <h3>Avoid Cats</h3>
+                        <p>A Godot platformer with hand-drawn pixel art and animation.</p>
+                        <div class="tags">[godot] [gdscript] [pixel-art]</div>
+                        <div class="card-hint">details</div>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <!-- Contact -->
+        <section id="contact" data-file="contact.md">
+            <h2 class="sec-head reveal">// <b>contact</b></h2>
+            <div class="contact-box reveal">
+                <p class="line"><span class="pr">$</span>contact --list</p>
+                <ul class="clist">
+                    <li><span class="k">email</span><a href="mailto:christopherchenpatrick@gmail.com">christopherchenpatrick@gmail.com</a><button class="copy" data-copy="christopherchenpatrick@gmail.com" aria-label="Copy email">⧉ copy</button></li>
+                    <li><span class="k">github</span><a href="https://github.com/04christopher" target="_blank" rel="noopener">github.com/04christopher</a><button class="copy" data-copy="https://github.com/04christopher" aria-label="Copy GitHub URL">⧉ copy</button></li>
+                    <li><span class="k">linkedin</span><a href="https://www.linkedin.com/in/christopher-chen-027b161ba/" target="_blank" rel="noopener">/in/christopher-chen</a><button class="copy" data-copy="https://www.linkedin.com/in/christopher-chen-027b161ba/" aria-label="Copy LinkedIn URL">⧉ copy</button></li>
+                    <li><span class="k">resume</span><a href="photos/ChristopherChenResume.pdf" download>ChristopherChenResume.pdf</a></li>
+                </ul>
+            </div>
+        </section>
+
+        <footer><span class="pr">$</span>echo "© <span id="year"></span> christopher chen"</footer>
+    </main>
+
+    <!-- Status bar -->
+    <footer class="statusbar">
+        <div class="seg"><span class="accent"><i class="fa-solid fa-code-branch"></i> main</span><span class="hide-sm">✓ open to co-op</span></div>
+        <div class="seg"><span id="stFile">welcome.md</span><span class="hide-sm">UTF-8</span><span class="hide-sm">LF</span><span>JetBrains Mono</span></div>
+    </footer>
+
+    <!-- Project modal -->
+    <div class="modal-overlay" id="projModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal">
+            <div class="modal-bar">
+                <span class="tb-dots"><i></i><i></i><i></i></span>
+                <span class="modal-path" id="modalPath">~/projects</span>
+                <button class="modal-close" id="modalClose" aria-label="Close">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="carousel" id="carousel">
+                    <div id="carouselTrack"></div>
+                    <button class="cbtn prev" id="cPrev" aria-label="Previous">‹</button>
+                    <button class="cbtn next" id="cNext" aria-label="Next">›</button>
+                    <div class="cdots" id="cDots"></div>
                 </div>
-            </div>
-            <h3 class="project-title">UBC Campus Explorer</h3>
-            <p class="project-desc">
-                A website that allows a user to search, filter, and locate all rooms and lecture halls on campus.
-            </p>
-            <div class="project-tech">
-                <span>TypeScript</span>
-                <span>Express.js</span>
-            </div>
-            <button class="project-select-btn" onclick="openModal('campusexplorer')">SELECT LEVEL</button>
-        </div>
-
-        <!-- NEW Project 5: Platformer Game -->
-        <div class="project-card">
-            <div class="project-top">
-                <i class="fa-solid fa-gamepad folder-icon" style="color: var(--header-color);"></i>
-                <div class="project-links">
-                    <!--                    <a href="#"><i class="fa-brands fa-github"></i></a>-->
-                    <!--                    <a href="#"><i class="fa-solid fa-up-right-from-square"></i></a>-->
-                </div>
-            </div>
-            <h3 class="project-title">AVOID CATS PLATFORMER GAME</h3>
-            <p class="project-desc">
-                A platformer game I made in Godot, where you play as a character that can't touch cats. (Basically Mario).
-            </p>
-            <div class="project-tech">
-                <span>Godot</span>
-                <span>Sprite Art(kind of)</span>
-            </div>
-            <button class="project-select-btn" onclick="openModal('platformer')">SELECT LEVEL</button>
-        </div>
-
-        <!-- NEW Project 6: FPS Game -->
-        <div class="project-card">
-            <div class="project-top">
-                <i class="fa-solid fa-crosshairs folder-icon" style="color: var(--accent-yellow);"></i>
-                <div class="project-links">
-                    <!--                    <a href="#"><i class="fa-brands fa-github"></i></a>-->
-                    <!--                    <a href="#"><i class="fa-solid fa-up-right-from-square"></i></a>-->
-                </div>
-            </div>
-            <h3 class="project-title">First Person Shooter</h3>
-            <p class="project-desc">
-                Coming Soon
-            </p>
-            <div class="project-tech">
-                <span>Blender</span>
-                <span>Python</span>
-            </div>
-            <button class="project-select-btn" onclick="openModal('fps')">SELECT LEVEL</button>
-        </div>
-
-        <!-- NEW Project 7: Ultrasound ML -->
-        <div class="project-card">
-            <div class="project-top">
-                <i class="fa-solid fa-heart-pulse folder-icon" style="color: var(--accent-orange);"></i>
-                <div class="project-links">
-                    <!--                    <a href="#"><i class="fa-brands fa-github"></i></a>-->
-                </div>
-            </div>
-            <h3 class="project-title">Ultrasound Chart Prediction Model</h3>
-            <p class="project-desc">
-                ML model that predicts live birth outcomes given 6 weeks of ultrasound information. Supporting preliminary analysis at BC Children's Hospital.
-            </p>
-            <div class="project-tech">
-                <span>Python</span>
-                <span>sklearn</span>
-                <span>Pandas</span>
-                <span>NumPy</span>
-                <span>Data Analysis</span>
-            </div>
-            <button class="project-select-btn" onclick="openModal('ultrasound')">SELECT LEVEL</button>
-        </div>
-    </div>
-</section>
-
-<!-- Contact Section -->
-<section id="contact" class="contact">
-    <p class="arcade-font" style="color: var(--accent-cyan); font-size: 0.8rem; margin-bottom: 2rem;">GAME OVER?</p>
-    <h2 style="font-size: 2.5rem; margin-bottom: 1.5rem; color: var(--accent-yellow);">CONTINUE?</h2>
-    <p>
-        <span id="game-timer" style="font-size: 3rem; color: var(--header-color); font-family: 'Press Start 2P', cursive; text-shadow: 3px 3px 0 #b0003a;">10</span> <br>
-        <br>
-        Don't let the timer run out! Send me a message to continue! Currently looking for Summer/Fall 2026 internships.
-    </p>
-    <a href="mailto:christopherchenpatrick@gmail.com" class="cta-btn">INSERT COIN (EMAIL)</a>
-
-    <div class="social-links">
-        <a href="https://github.com/04christopher" target="_blank" rel="noopener noreferrer" class="social-icon"><i class="fa-brands fa-github"></i></a>
-        <a href="https://www.linkedin.com/in/christopher-chen-027b161ba/" target="_blank" rel="noopener noreferrer" class="social-icon"><i class="fa-brands fa-linkedin"></i></a>
-    </div>
-</section>
-
-<footer>
-    <p>HIGH SCORE: 67 <br> © 2004 CHRISTOPHER CHEN</p>
-</footer>
-
-<!-- Project Modal Template -->
-<div id="project-modal" class="modal-overlay">
-    <div class="modal-content">
-        <button class="close-btn" onclick="closeModal()">X</button>
-        <h2 id="modal-title" class="arcade-font" style="color: var(--accent-yellow); font-size: 1.2rem; margin-bottom: 10px;">PROJECT TITLE</h2>
-
-        <div class="modal-body">
-            <!-- Carousel Container -->
-            <div class="carousel-container">
-                <button class="carousel-btn prev" onclick="moveCarousel(-1)">&#10094;</button>
-                <div id="carousel-slides" style="width: 100%; height: 100%;">
-                    <!-- Slides injected via JS -->
-                </div>
-                <button class="carousel-btn next" onclick="moveCarousel(1)">&#10095;</button>
-            </div>
-
-            <p id="modal-desc" class="mono" style="color: #ddd; margin-bottom: 20px;">
-                Detailed description goes here...
-            </p>
-
-            <h3 style="font-size: 0.9rem; color: var(--accent-orange); margin-bottom: 10px;">TECH STACK:</h3>
-            <div id="modal-tech" class="project-tech" style="margin-bottom: 25px;">
-                <!-- Tech tags injected here -->
-            </div>
-
-            <div class="modal-links">
-                <a id="modal-github" href="#" target="_blank" class="cta-btn" style="font-size: 0.7rem; padding: 12px; margin-top: 0;">VIEW SOURCE</a>
-                <a id="modal-demo" href="#" target="_blank" class="cta-btn" style="font-size: 0.7rem; padding: 12px; margin-top: 0; border-color: var(--accent-cyan); color: var(--accent-cyan);">VIDEO DEMO</a>
-                <a id="modal-demo2" href="#" target="_blank" class="cta-btn" style="font-size: 0.7rem; padding: 12px; margin-top: 0; border-color: var(--accent-cyan); color: var(--accent-cyan);">ANOTHER VIDEO DEMO</a>
+                <h3 id="modalTitle"></h3>
+                <p class="modal-desc" id="modalDesc"></p>
+                <div class="tags" id="modalTags"></div>
+                <div class="modal-links" id="modalLinks"></div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Scripts -->
-<script>
-    // --- Arcade Game Logic (Asteroids) ---
-    let gameActive = false;
-    const arcadeCanvas = document.getElementById('arcade-canvas');
-    const arcadeCtx = arcadeCanvas.getContext('2d');
-    let ship, asteroids = [], bullets = [];
-    let score = 0;
-    let animationId;
-    let keys = { ArrowUp: false, ArrowLeft: false, ArrowRight: false, Space: false };
+    <!-- Command palette -->
+    <div class="palette-overlay" id="palette" role="dialog" aria-modal="true" aria-label="Command palette">
+        <div class="palette">
+            <div class="palette-input-wrap"><span class="pr">&gt;</span><input id="paletteInput" placeholder="Type a command or jump to a section…" autocomplete="off"></div>
+            <ul id="paletteList"></ul>
+        </div>
+    </div>
 
-    // Resize canvas
-    function resizeArcade() {
-        const container = document.getElementById('arcade-container');
-        arcadeCanvas.width = container.clientWidth;
-        arcadeCanvas.height = container.clientHeight;
-    }
-    window.addEventListener('resize', resizeArcade);
+    <div id="toast"></div>
 
-    class Ship {
-        constructor() {
-            this.x = arcadeCanvas.width / 2;
-            this.y = arcadeCanvas.height / 2;
-            this.r = 10;
-            this.angle = 0;
-            this.rotation = 0;
-            this.thrust = false;
-            this.vel = { x: 0, y: 0 };
-        }
-        update() {
-            if (keys.ArrowLeft) this.angle -= 0.06;
-            if (keys.ArrowRight) this.angle += 0.06;
-            if (keys.ArrowUp) {
-                this.thrust = true;
-                this.vel.x += Math.cos(this.angle - Math.PI/2) * 0.16;
-                this.vel.y += Math.sin(this.angle - Math.PI/2) * 0.16;
-            } else {
-                this.thrust = false;
-                this.vel.x *= 0.98; // friction
-                this.vel.y *= 0.98;
-            }
-            this.x += this.vel.x;
-            this.y += this.vel.y;
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+        const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-            // Wrap around
-            if (this.x < 0 - this.r) this.x = arcadeCanvas.width + this.r;
-            if (this.x > arcadeCanvas.width + this.r) this.x = 0 - this.r;
-            if (this.y < 0 - this.r) this.y = arcadeCanvas.height + this.r;
-            if (this.y > arcadeCanvas.height + this.r) this.y = 0 - this.r;
-        }
-        draw() {
-            arcadeCtx.strokeStyle = '#05d9e8';
-            arcadeCtx.lineWidth = 2;
-            arcadeCtx.beginPath();
-            // Nose
-            arcadeCtx.moveTo(
-                this.x + 4/3 * this.r * Math.cos(this.angle - Math.PI/2),
-                this.y + 4/3 * this.r * Math.sin(this.angle - Math.PI/2)
-            );
-            // Left rear
-            arcadeCtx.lineTo(
-                this.x - this.r * (2/3 * Math.cos(this.angle - Math.PI/2) + Math.sin(this.angle - Math.PI/2)),
-                this.y - this.r * (2/3 * Math.sin(this.angle - Math.PI/2) - Math.cos(this.angle - Math.PI/2))
-            );
-            // Right rear
-            arcadeCtx.lineTo(
-                this.x - this.r * (2/3 * Math.cos(this.angle - Math.PI/2) - Math.sin(this.angle - Math.PI/2)),
-                this.y - this.r * (2/3 * Math.sin(this.angle - Math.PI/2) + Math.cos(this.angle - Math.PI/2))
-            );
-            arcadeCtx.closePath();
-            arcadeCtx.stroke();
-        }
-    }
-
-    class Bullet {
-        constructor(x, y, angle) {
-            this.x = x;
-            this.y = y;
-            this.vel = {
-                x: Math.cos(angle - Math.PI/2) * 5,
-                y: Math.sin(angle - Math.PI/2) * 5
-            };
-            this.life = 60;
-        }
-        update() {
-            this.x += this.vel.x;
-            this.y += this.vel.y;
-            this.life--;
-        }
-        draw() {
-            arcadeCtx.fillStyle = '#ffc800';
-            arcadeCtx.beginPath();
-            arcadeCtx.arc(this.x, this.y, 2, 0, Math.PI*2);
-            arcadeCtx.fill();
-        }
-    }
-
-    class Asteroid {
-        constructor(x, y, r) {
-            this.x = x || Math.random() * arcadeCanvas.width;
-            this.y = y || Math.random() * arcadeCanvas.height;
-            this.r = r || Math.random() * 20 + 15;
-            this.vel = {
-                x: (Math.random() - 0.5) * 2,
-                y: (Math.random() - 0.5) * 2
-            };
-            this.vertices = Math.floor(Math.random() * 5 + 5);
-            this.offsets = [];
-            for (let i=0; i<this.vertices; i++) {
-                this.offsets.push(Math.random() * 0.4 + 0.8);
-            }
-        }
-        update() {
-            this.x += this.vel.x;
-            this.y += this.vel.y;
-            // Wrap
-            if (this.x < -this.r) this.x = arcadeCanvas.width + this.r;
-            if (this.x > arcadeCanvas.width + this.r) this.x = -this.r;
-            if (this.y < -this.r) this.y = arcadeCanvas.height + this.r;
-            if (this.y > arcadeCanvas.height + this.r) this.y = -this.r;
-        }
-        draw() {
-            arcadeCtx.strokeStyle = '#ff2a6d';
-            arcadeCtx.lineWidth = 2;
-            arcadeCtx.beginPath();
-            for (let i=0; i<this.vertices; i++) {
-                const angle = i / this.vertices * Math.PI * 2;
-                const r = this.r * this.offsets[i];
-                const x = this.x + r * Math.cos(angle);
-                const y = this.y + r * Math.sin(angle);
-                if (i===0) arcadeCtx.moveTo(x, y);
-                else arcadeCtx.lineTo(x, y);
-            }
-            arcadeCtx.closePath();
-            arcadeCtx.stroke();
-        }
-    }
-
-    function initGame() {
-        resizeArcade();
-        ship = new Ship();
-        bullets = [];
-        asteroids = [];
-        score = 0;
-        // Spawn asteroids away from ship
-        for(let i=0; i<4; i++) {
-            let a = new Asteroid();
-            if (Math.hypot(a.x - ship.x, a.y - ship.y) < 100) {
-                a.x += 200;
-            }
-            asteroids.push(a);
-        }
-    }
-
-    function gameLoop() {
-        if (!gameActive) return;
-
-        arcadeCtx.fillStyle = 'rgba(0, 0, 0, 0.3)'; // Trail effect
-        arcadeCtx.fillRect(0, 0, arcadeCanvas.width, arcadeCanvas.height);
-
-        ship.update();
-        ship.draw();
-
-        // Update bullets
-        for (let i = bullets.length - 1; i >= 0; i--) {
-            bullets[i].update();
-            bullets[i].draw();
-            if (bullets[i].life <= 0) bullets.splice(i, 1);
-        }
-
-        // Update asteroids
-        for (let i = asteroids.length - 1; i >= 0; i--) {
-            asteroids[i].update();
-            asteroids[i].draw();
-
-            // --- NEW: Ship Collision Detection ---
-            if (Math.hypot(ship.x - asteroids[i].x, ship.y - asteroids[i].y) < ship.r + asteroids[i].r) {
-                gameOver();
+        /* ---- Type-on-load hero ---- */
+        (function typeHero() {
+            const steps = [
+                { el: 'cmd1', text: 'whoami', out: 'out1' },
+                { el: 'cmd2', text: 'cat status.txt', out: 'out2' },
+                { el: 'cmd3', text: 'ls ~/links', out: 'out3' }
+            ];
+            if (prefersReduced) {
+                steps.forEach(s => { document.getElementById(s.el).textContent = s.text; document.getElementById(s.out).classList.add('show'); });
                 return;
             }
-
-            // Collision Bullet vs Asteroid
-            for (let j = bullets.length - 1; j >= 0; j--) {
-                if (Math.hypot(asteroids[i].x - bullets[j].x, asteroids[i].y - bullets[j].y) < asteroids[i].r) {
-                    // Split if big enough
-                    if (asteroids[i].r > 15) {
-                        asteroids.push(new Asteroid(asteroids[i].x, asteroids[i].y, asteroids[i].r/2));
-                        asteroids.push(new Asteroid(asteroids[i].x, asteroids[i].y, asteroids[i].r/2));
-                    }
-                    asteroids.splice(i, 1);
-                    bullets.splice(j, 1);
-                    score += 100;
-                    document.getElementById('arcade-score').innerText = 'SCORE: ' + score;
-                    break;
-                }
+            let si = 0;
+            function runStep() {
+                if (si >= steps.length) return;
+                const s = steps[si], el = document.getElementById(s.el);
+                let ci = 0;
+                (function typeChar() {
+                    if (ci <= s.text.length) { el.textContent = s.text.slice(0, ci); ci++; setTimeout(typeChar, 45); }
+                    else { document.getElementById(s.out).classList.add('show'); si++; setTimeout(runStep, 380); }
+                })();
             }
+            setTimeout(runStep, 350);
+        })();
+
+        /* ---- Scroll reveal ---- */
+        const io = new IntersectionObserver((entries) => {
+            entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+        }, { threshold: 0.12 });
+        document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+        /* ---- Explorer file tree ---- */
+        const fileRows = [...document.querySelectorAll('.tree-row.file[data-target]')];
+        const fileByTarget = {};
+        fileRows.forEach(r => fileByTarget[r.dataset.target] = r);
+        function goSection(id) {
+            const sec = document.getElementById(id);
+            if (sec) sec.scrollIntoView({ behavior: prefersReduced ? 'auto' : 'smooth', block: 'start' });
+            if (window.innerWidth <= 860) document.getElementById('sidebar').classList.remove('open');
         }
+        fileRows.forEach(r => r.addEventListener('click', () => goSection(r.dataset.target)));
 
-        // Spawn more if clear
-        if (asteroids.length === 0) {
-            for(let i=0; i<3; i++) asteroids.push(new Asteroid(0, Math.random()*arcadeCanvas.height));
-        }
-
-        animationId = requestAnimationFrame(gameLoop);
-    }
-
-    function startArcadeGame() {
-        if (gameActive) return;
-        gameActive = true;
-        document.getElementById('arcade-overlay').style.display = 'none';
-        document.getElementById('arcade-score').style.display = 'block';
-        initGame();
-        gameLoop();
-    }
-
-    // --- NEW: Game Over Function ---
-    function gameOver() {
-        gameActive = false;
-        cancelAnimationFrame(animationId);
-        const overlay = document.getElementById('arcade-overlay');
-        overlay.style.display = 'flex';
-        overlay.innerHTML = '<p class="arcade-font" style="font-size: 1.2rem; color: #ff2a6d; margin-bottom: 10px;">GAME OVER</p><p class="mono" style="font-size: 1.2rem;">FINAL SCORE: ' + score + '</p><p class="mono" style="font-size: 0.9rem; color: #aaa; margin-top: 10px;">CLICK TO RESTART (ARROWS: MOVE, SPACE: SHOOT)</p>';
-    }
-
-    // Input Handling
-    window.addEventListener('keydown', (e) => {
-        if (!gameActive) return;
-        if (e.code === 'ArrowUp') { keys.ArrowUp = true; e.preventDefault(); }
-        if (e.code === 'ArrowLeft') { keys.ArrowLeft = true; e.preventDefault(); }
-        if (e.code === 'ArrowRight') { keys.ArrowRight = true; e.preventDefault(); }
-        if (e.code === 'Space') {
-            keys.Space = true;
-            bullets.push(new Bullet(ship.x, ship.y, ship.angle));
-            e.preventDefault();
-        }
-    });
-
-    window.addEventListener('keyup', (e) => {
-        if (e.code === 'ArrowUp') keys.ArrowUp = false;
-        if (e.code === 'ArrowLeft') keys.ArrowLeft = false;
-        if (e.code === 'ArrowRight') keys.ArrowRight = false;
-        if (e.code === 'Space') keys.Space = false;
-    });
-
-    // Deactivate on click outside
-    document.addEventListener('click', (e) => {
-        const container = document.getElementById('arcade-container');
-        if (gameActive && !container.contains(e.target)) {
-            gameActive = false;
-            cancelAnimationFrame(animationId);
-            document.getElementById('arcade-overlay').style.display = 'flex';
-            document.getElementById('arcade-overlay').innerHTML = '<p class="arcade-font" style="font-size: 1.2rem; color: var(--accent-yellow); margin-bottom: 10px;">PAUSED</p><p class="mono">CLICK TO RESUME</p>';
-        }
-    });
-
-
-    // --- Project Modal Logic ---
-    const projectData = {
-        'algo': {
-            title: 'Mindful Motion',
-            desc: 'This project won 1st place at HelloHacks by using a camera to count your exercise reps and help you hold a yoga pose. We apply various image processing techniques to compare frames and detect movement.',
-            tech: ['OpenCV', 'Python'],
-            images: [
-                "photos/hellohackscheque.jpg",
-                "photos/hellohacksdeltaframes.jpg",
-                "photos/hellohacksscreen.jpg"
-            ],
-            github: 'https://github.com/troy-wu/team1',
-            demo: '#',
-            demo2: '#'
-        },
-        'chatbot': {
-            title: 'BasketBot',
-            desc: 'I wrote this program for basketball score-keeping using a smartphone camera. It detects the ball based on size, shape, and colour, and tracks the ball through the net.' +
-                ' We also implemented voice commands for timer and score controls, and trained a trial net detection neural network model. Check out the video demos below!',
-            tech: ['OpenCV', 'Python', 'Vosk Speech Recognition', 'TensorFlow'],
-            images: [
-                "photos/basketbot.jpg",
-                "photos/demoshot.jpg",
-                "https://drive.google.com/file/d/1kXJ37UYKfjEzPfQK8SG2-606QpeM4Eju/view",
-                "https://drive.google.com/file/d/1RJbd_o-VBn84WX9jimN7xBIibmxVnxko/view"
-            ],
-            github: 'https://github.com/04christopher/basketbot',
-            demo: 'https://drive.google.com/file/d/1kXJ37UYKfjEzPfQK8SG2-606QpeM4Eju/view?resourcekey',
-            demo2: 'https://drive.google.com/file/d/1RJbd_o-VBn84WX9jimN7xBIibmxVnxko/view'
-        },
-        'portfolio': {
-            title: '\"Among Us\" Database',
-            desc: 'This database serves as a record for a complete \"Among Us\" game (lists relationships, events, and history). I designed the schema myself, and it comes with a front end query tool. The next step is to actually integrate it with Among Us!',
-            tech: ['SQL', 'Oracle DB', 'JS'],
-            images: [
-                "https://drive.google.com/file/d/1CdElc5I6TV4Dl2wkEI_pdeS23c8t8Sgt/preview",
-                "photos/amongus ER diagram.png"
-            ],
-            github: 'https://github.com/04christopher/amongusDB',
-            demo: 'https://drive.google.com/file/d/1CdElc5I6TV4Dl2wkEI_pdeS23c8t8Sgt/view',
-            demo2: '#'
-        },
-        'campusexplorer': {
-            title: 'UBC Campus Explorer',
-            desc: 'You can click on any room on the UBC map (or search it up) to bring up a panel with the room information. It also calculates the estimated walking distance between rooms.',
-            tech: ['TypeScript', 'Express.js', "REST API design"],
-            images: [
-                "photos/campus explorer.png",
-                "https://drive.google.com/file/d/1UMgyWTUb7meSsjh7eU-Vkm6JJm3FVL8Z/view?usp=sharing"
-            ],
-            github: 'https://github.com/04christopher/campus-explorer',
-            demo: 'https://drive.google.com/file/d/1UMgyWTUb7meSsjh7eU-Vkm6JJm3FVL8Z/view?usp=sharing',
-            demo2: '#'
-        },
-        'platformer': {
-            title: 'Avoid Cats!',
-            desc: 'A platformer game where you try to get coins and avoid touching moving cats (modelled off my friends\' pets).' +
-                ' This game was made in Godot, and I even drew all the pixel art for the characters myself. I had to draw multiple animation states AND time their states to appear correctly with movement, which was not easy to figure out.' +
-                'This project consisted of a lot of data collection and manipulation, and I programmed some simple ' +
-                'You can see the models in the gallery are blurry because they are 32 bit. I\'m also not good at drawing.',
-            tech: ['Godot', 'Sprite Art (kind of)'],
-            images: [
-                "photos/avoidcats.png",
-                "https://drive.google.com/file/d/1m9F8vCeV_fcAwv7SAvDRDa-ftW3OtbJ1/view?usp=sharing",
-                "photos/juno coke.png",
-                "photos/FINAL.png"
-            ],
-            github: '#',
-            demo: 'https://drive.google.com/file/d/1m9F8vCeV_fcAwv7SAvDRDa-ftW3OtbJ1/view?usp=sharing',
-            demo2: '#'
-        },
-        'fps': {
-            title: 'First Person Shooter',
-            desc: 'Coming Soon',
-            tech: ['Blender', 'Python'],
-            images: [
-                "MULTIPLAYER LOBBY",
-                "GAMEPLAY ACTION SHOT"
-            ],
-            github: '#',
-            demo: '#',
-            demo2: '#'
-        },
-        'ultrasound': {
-            title: 'Ultrasound Chart Prediction Model',
-            desc: 'A machine learning model designed to predict live birth outcomes based on patient ultrasound data. Unfortunately, '+
-                'I can not show patient data or outcomes, but this project was done to support preliminary analysis and demonstrate feasibility of using ML models to predict outcomes, specifically in individuals with preeclampsia or recurrent pregnancy loss.' +
-                'I displayed results from multiple models including random forest, logistic regression, and XGBoost, and reported high impact features and accuracy.' +
-                ' Ask me about this!',
-            tech: ['Python', 'sklearn', 'Pandas', 'NumPy', 'Data Analysis'],
-            images: [
-                "REDACTED!"
-            ],
-            github: '#',
-            demo: '#',
-            demo2: '#'
-        }
-    };
-
-    let currentSlideIndex = 0;
-    let currentProjectImages = [];
-
-    function openModal(projectId) {
-        const data = projectData[projectId];
-        if(!data) return;
-
-        document.getElementById('modal-title').innerText = data.title;
-        document.getElementById('modal-desc').innerText = data.desc;
-
-        // Clear and add tech tags
-        const techContainer = document.getElementById('modal-tech');
-        techContainer.innerHTML = '';
-        data.tech.forEach(tech => {
-            const span = document.createElement('span');
-            span.innerText = tech;
-            techContainer.appendChild(span);
+        // folder toggles
+        document.querySelectorAll('.tree-row.folder').forEach(f => {
+            f.addEventListener('click', () => {
+                f.classList.toggle('collapsed');
+                const sib = f.dataset.folder === 'projects' ? document.getElementById('projChildren') : document.getElementById('rootChildren');
+                if (sib) sib.classList.toggle('collapsed');
+            });
         });
+        // project files open modal
+        document.querySelectorAll('.tree-row.proj').forEach(p => p.addEventListener('click', (e) => { e.stopPropagation(); openModal(p.dataset.proj); }));
 
-        // Update Links
-        const githubBtn = document.getElementById('modal-github');
-        const demoBtn = document.getElementById('modal-demo');
-        const demoBtn2 = document.getElementById('modal-demo2');
+        // scroll-spy: active file + tab + status
+        const sections = [...document.querySelectorAll('section[id]')];
+        const spy = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    const id = e.target.id, file = e.target.dataset.file || id;
+                    fileRows.forEach(r => r.classList.toggle('active', r.dataset.target === id));
+                    document.getElementById('activeTab').textContent = file;
+                    document.getElementById('stFile').textContent = file;
+                }
+            });
+        }, { rootMargin: '-45% 0px -50% 0px' });
+        sections.forEach(s => spy.observe(s));
 
-        // Update hrefs
-        githubBtn.href = data.github;
-        demoBtn.href = data.demo;
-        demoBtn2.href = data.demo2;
+        // mobile sidebar toggle
+        document.getElementById('hamburger').addEventListener('click', () => document.getElementById('sidebar').classList.toggle('open'));
 
-        // Optional: Hide buttons if link is just '#' or empty, remove this block if you always want them shown
-        githubBtn.style.display = (data.github === '#' || !data.github) ? 'none' : 'inline-block';
-        demoBtn.style.display = (data.demo === '#' || !data.demo) ? 'none' : 'inline-block';
-        demoBtn2.style.display = (data.demo2 === '#' || !data.demo2) ? 'none' : 'inline-block';
-
-
-        // --- Carousel Setup ---
-        currentProjectImages = data.images || [];
-        currentSlideIndex = 0;
-        renderCarousel();
-
-        const modal = document.getElementById('project-modal');
-        modal.style.display = 'flex';
-        document.body.style.overflow = 'hidden'; // Prevent scrolling background
-    }
-
-    function renderCarousel() {
-        const container = document.getElementById('carousel-slides');
-        container.innerHTML = '';
-
-        if (currentProjectImages.length === 0) {
-            container.innerHTML = '<div class="carousel-slide active"><p>NO MEDIA LOADED</p></div>';
-            return;
+        /* ---- Copy to clipboard ---- */
+        const toast = document.getElementById('toast');
+        let toastT;
+        function showToast(msg) {
+            toast.textContent = msg; toast.classList.add('show');
+            clearTimeout(toastT); toastT = setTimeout(() => toast.classList.remove('show'), 1600);
         }
+        function copyText(t) {
+            navigator.clipboard.writeText(t).then(() => showToast('copied ✓ ' + t)).catch(() => showToast('copy failed'));
+        }
+        document.querySelectorAll('.copy').forEach(b => b.addEventListener('click', (e) => { e.stopPropagation(); copyText(b.dataset.copy); }));
 
-        currentProjectImages.forEach((src, index) => {
-            const slide = document.createElement('div');
-            slide.className = index === 0 ? 'carousel-slide active' : 'carousel-slide';
-
-            // --- SMART LINK DETECTION & CONVERSION ---
-            let embedSrc = src;
-
-            // 1. Convert Google Drive "View" links to "Preview"
-            if (src.includes('drive.google.com') && src.includes('/view')) {
-                embedSrc = src.replace(/\/view.*/, '/preview');
-            }
-
-            // 2. Convert standard YouTube "Watch" links to "Embed"
-            if (src.includes('youtube.com/watch?v=')) {
-                const videoId = src.split('v=')[1].split('&')[0];
-                embedSrc = `https://www.youtube.com/embed/${videoId}`;
-            } else if (src.includes('youtu.be/')) {
-                const videoId = src.split('youtu.be/')[1].split('?')[0];
-                embedSrc = `https://www.youtube.com/embed/${videoId}`;
-            }
-
-            // --- RENDER ---
-
-            // Check for YouTube/Vimeo/Google Drive Embeds
-            if (embedSrc.includes('youtube.com/embed') || embedSrc.includes('player.vimeo.com') || embedSrc.includes('drive.google.com')) {
-                slide.innerHTML = `<iframe src="${embedSrc}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
-            }
-            // Check for Video Files (mp4, webm, etc.)
-            else if (src.match(/\.(mp4|webm|ogg)$/i)) {
-                slide.innerHTML = `<video controls><source src="${src}" type="video/mp4">Your browser does not support the video tag.</video>`;
-            }
-            // Check for Images
-            else if (src.includes('/') || src.includes('.')) {
-                slide.innerHTML = `<img src="${src}" alt="Slide ${index}">`;
-            }
-            // Text Placeholder
+        /* ---- Project modal + carousel ---- */
+        const projects = {
+            'basketbot': { title: 'BasketBot', desc: `Basketball score-keeping from a smartphone camera — it detects the ball by size, shape, and colour and tracks it through the net. Adds voice commands for timer and score control, plus a trained net-detection neural network. Won 1st place at ProduHacks.`, tech: ['Python','OpenCV','Vosk','TensorFlow'], media: ['photos/basketbot.jpg','photos/demoshot.jpg','https://drive.google.com/file/d/1kXJ37UYKfjEzPfQK8SG2-606QpeM4Eju/preview','https://drive.google.com/file/d/1RJbd_o-VBn84WX9jimN7xBIibmxVnxko/preview'], links: [{label:'README ↗',url:'https://github.com/04christopher/basketbot'},{label:'video demo ↗',url:'https://drive.google.com/file/d/1kXJ37UYKfjEzPfQK8SG2-606QpeM4Eju/view'}] },
+            'mindful-motion': { title: 'Mindful Motion', desc: `A webcam rep counter and yoga-pose corrector. It uses frame differencing and image-processing to detect movement and hold time. Won 1st place out of 200 participants at HelloHacks.`, tech: ['Python','OpenCV','Flask'], media: ['photos/hellohacksscreen.jpg','photos/hellohacksdeltaframes.jpg','photos/hellohackscheque.jpg'], links: [{label:'README ↗',url:'https://github.com/troy-wu/team1'}] },
+            'ultrasound-ml': { title: 'Ultrasound Outcome Prediction', desc: `ML models that predict live-birth outcomes from six weeks of ultrasound biomarkers (pre-eclampsia / recurrent pregnancy loss). Built to support preliminary analysis at BC Children's Hospital.`, tech: ['Python','scikit-learn','Pandas','NumPy'], media: [], links: [] },
+            'campus-explorer': { title: 'UBC Campus Explorer', desc: `Click any room on the UBC map (or search it) to bring up its info, and get estimated walking distances between rooms — backed by a custom query engine.`, tech: ['TypeScript','Express','REST'], media: ['photos/campus%20explorer.png','https://drive.google.com/file/d/1UMgyWTUb7meSsjh7eU-Vkm6JJm3FVL8Z/preview'], links: [{label:'README ↗',url:'https://github.com/04christopher/campus-explorer'}] },
+            'amongus-db': { title: '"Among Us" Database', desc: `A relational database recording a complete Among Us match — relationships, events, and history. I designed the schema myself, and it ships with a front-end query tool.`, tech: ['SQL','Oracle','JS'], media: ['photos/amongus%20ER%20diagram.png','https://drive.google.com/file/d/1CdElc5I6TV4Dl2wkEI_pdeS23c8t8Sgt/preview'], links: [{label:'README ↗',url:'https://github.com/04christopher/amongusDB'}] },
+            'avoid-cats': { title: 'Avoid Cats', desc: `A Godot platformer where you collect coins while dodging cats (modelled on friends' pets). I drew all the pixel art and timed the animation states to movement myself.`, tech: ['Godot','GDScript','Pixel Art'], media: ['photos/avoidcats.png','photos/juno%20coke.png','photos/FINAL.png','https://drive.google.com/file/d/1m9F8vCeV_fcAwv7SAvDRDa-ftW3OtbJ1/preview'], links: [{label:'video demo ↗',url:'https://drive.google.com/file/d/1m9F8vCeV_fcAwv7SAvDRDa-ftW3OtbJ1/view'}] }
+        };
+        const overlay = document.getElementById('projModal');
+        const track = document.getElementById('carouselTrack');
+        const dotsEl = document.getElementById('cDots');
+        const carousel = document.getElementById('carousel');
+        let cIndex = 0, cCount = 0;
+        function buildSlide(m) {
+            if (/drive\.google\.com/.test(m)) { const url = m.replace(/\/view.*$/, '/preview'); return '<div class="slide"><div class="frame"><iframe src="' + url + '" allow="autoplay" allowfullscreen loading="lazy"></iframe></div></div>'; }
+            return '<div class="slide"><img src="' + m + '" loading="lazy" alt=""></div>';
+        }
+        function showSlide(i) { cIndex = i; track.querySelectorAll('.slide').forEach((s, idx) => s.classList.toggle('active', idx === i)); dotsEl.querySelectorAll('i').forEach((d, idx) => d.classList.toggle('active', idx === i)); }
+        function moveCarousel(d) { if (cCount) showSlide((cIndex + d + cCount) % cCount); }
+        document.getElementById('cPrev').addEventListener('click', () => moveCarousel(-1));
+        document.getElementById('cNext').addEventListener('click', () => moveCarousel(1));
+        function openModal(key) {
+            const p = projects[key]; if (!p) return;
+            document.getElementById('modalPath').textContent = '~/projects/' + key;
+            document.getElementById('modalTitle').textContent = p.title;
+            document.getElementById('modalDesc').textContent = p.desc;
+            document.getElementById('modalTags').textContent = p.tech.map(t => '[' + t.toLowerCase() + ']').join(' ');
+            const media = p.media || []; cCount = media.length;
+            if (cCount === 0) { carousel.style.display = 'none'; track.innerHTML = ''; dotsEl.innerHTML = ''; }
             else {
-                slide.innerHTML = `<i class="fa-solid fa-image" style="font-size: 3rem; margin-bottom: 15px;"></i><p>${src}</p>`;
+                carousel.style.display = 'block';
+                track.innerHTML = media.map(buildSlide).join('');
+                dotsEl.innerHTML = media.map((_, i) => '<i data-i="' + i + '"></i>').join('');
+                dotsEl.querySelectorAll('i').forEach(d => d.addEventListener('click', () => showSlide(+d.dataset.i)));
+                const multi = cCount > 1;
+                document.getElementById('cPrev').style.display = multi ? 'grid' : 'none';
+                document.getElementById('cNext').style.display = multi ? 'grid' : 'none';
+                dotsEl.style.display = multi ? 'flex' : 'none';
+                showSlide(0);
             }
-            container.appendChild(slide);
+            const links = p.links || [];
+            document.getElementById('modalLinks').innerHTML = links.length ? links.map(l => '<a class="mbtn" href="' + l.url + '" target="_blank" rel="noopener">' + l.label + '</a>').join('') : '<span class="muted">research project</span>';
+            overlay.classList.add('open'); document.body.classList.add('modal-open');
+            document.getElementById('modalClose').focus();
+        }
+        function closeModal() { overlay.classList.remove('open'); document.body.classList.remove('modal-open'); track.innerHTML = ''; }
+        document.querySelectorAll('.card[data-proj]').forEach(card => {
+            card.addEventListener('click', () => openModal(card.dataset.proj));
+            card.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openModal(card.dataset.proj); } });
         });
-    }
+        document.getElementById('modalClose').addEventListener('click', closeModal);
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
 
-    function moveCarousel(n) {
-        const slides = document.getElementsByClassName('carousel-slide');
-        if (slides.length <= 1) return;
-
-        // Pause any playing videos when sliding away
-        const currentSlide = slides[currentSlideIndex];
-        const iframe = currentSlide.querySelector('iframe');
-        const video = currentSlide.querySelector('video');
-        if (iframe) {
-            // Reset src to stop youtube video
-            const src = iframe.src;
-            iframe.src = src;
+        /* ---- Command palette ---- */
+        const commands = [
+            { ic: 'fa-regular fa-file-lines', label: 'Go to: Welcome', cat: 'nav', run: () => goSection('home') },
+            { ic: 'fa-regular fa-file-lines', label: 'Go to: Resume', cat: 'nav', run: () => goSection('resume') },
+            { ic: 'fa-regular fa-file-lines', label: 'Go to: About', cat: 'nav', run: () => goSection('about') },
+            { ic: 'fa-solid fa-folder', label: 'Go to: Projects', cat: 'nav', run: () => goSection('projects') },
+            { ic: 'fa-regular fa-file-lines', label: 'Go to: Contact', cat: 'nav', run: () => goSection('contact') },
+            { ic: 'fa-solid fa-file-arrow-down', label: 'Open: Résumé (PDF)', cat: 'action', run: () => window.open('photos/ChristopherChenResume.pdf', '_blank') },
+            { ic: 'fa-regular fa-copy', label: 'Copy: Email address', cat: 'action', run: () => copyText('christopherchenpatrick@gmail.com') },
+            { ic: 'fa-brands fa-github', label: 'Open: GitHub', cat: 'link', run: () => window.open('https://github.com/04christopher', '_blank') },
+            { ic: 'fa-brands fa-linkedin', label: 'Open: LinkedIn', cat: 'link', run: () => window.open('https://www.linkedin.com/in/christopher-chen-027b161ba/', '_blank') },
+            { ic: 'fa-regular fa-file-code', label: 'Project: BasketBot', cat: 'project', run: () => openModal('basketbot') },
+            { ic: 'fa-regular fa-file-code', label: 'Project: Mindful Motion', cat: 'project', run: () => openModal('mindful-motion') },
+            { ic: 'fa-regular fa-file-code', label: 'Project: Ultrasound Outcome Prediction', cat: 'project', run: () => openModal('ultrasound-ml') },
+            { ic: 'fa-regular fa-file-code', label: 'Project: UBC Campus Explorer', cat: 'project', run: () => openModal('campus-explorer') },
+            { ic: 'fa-regular fa-file-code', label: 'Project: Among Us Database', cat: 'project', run: () => openModal('amongus-db') },
+            { ic: 'fa-regular fa-file-code', label: 'Project: Avoid Cats', cat: 'project', run: () => openModal('avoid-cats') }
+        ];
+        const paletteEl = document.getElementById('palette');
+        const paletteInput = document.getElementById('paletteInput');
+        const paletteList = document.getElementById('paletteList');
+        let pFiltered = commands.slice(), pSel = 0;
+        function renderPalette() {
+            paletteList.innerHTML = pFiltered.length
+                ? pFiltered.map((c, i) => '<li data-i="' + i + '" class="' + (i === pSel ? 'sel' : '') + '"><i class="ic ' + c.ic + '"></i> ' + c.label + '<span class="cat">' + c.cat + '</span></li>').join('')
+                : '<li class="empty">no matching commands</li>';
+            paletteList.querySelectorAll('li[data-i]').forEach(li => {
+                li.addEventListener('click', () => runCommand(+li.dataset.i));
+                li.addEventListener('mousemove', () => { pSel = +li.dataset.i; highlight(); });
+            });
         }
-        if (video) {
-            video.pause();
+        function highlight() { paletteList.querySelectorAll('li[data-i]').forEach((li, i) => li.classList.toggle('sel', i === pSel)); }
+        function filterPalette() {
+            const q = paletteInput.value.trim().toLowerCase();
+            pFiltered = commands.filter(c => c.label.toLowerCase().includes(q) || c.cat.includes(q));
+            pSel = 0; renderPalette();
         }
+        function runCommand(i) { const c = pFiltered[i]; if (!c) return; closePalette(); c.run(); }
+        function openPalette() { paletteEl.classList.add('open'); paletteInput.value = ''; filterPalette(); paletteInput.focus(); }
+        function closePalette() { paletteEl.classList.remove('open'); }
+        paletteInput.addEventListener('input', filterPalette);
+        document.getElementById('cmdkBtn').addEventListener('click', openPalette);
+        document.getElementById('cmdkAct').addEventListener('click', openPalette);
+        paletteEl.addEventListener('click', (e) => { if (e.target === paletteEl) closePalette(); });
 
-        slides[currentSlideIndex].classList.remove('active');
-        currentSlideIndex = (currentSlideIndex + n + slides.length) % slides.length;
-        slides[currentSlideIndex].classList.add('active');
-    }
-
-    function closeModal() {
-        const modal = document.getElementById('project-modal');
-        modal.style.display = 'none';
-        document.body.style.overflow = 'auto'; // Restore scrolling
-    }
-
-    // Close modal if clicking outside the content box
-    window.onclick = function(event) {
-        const modal = document.getElementById('project-modal');
-        if (event.target == modal) {
-            closeModal();
-        }
-    }
-
-    // --- Arcade Confetti Animation ---
-    const canvas = document.getElementById('bg-canvas');
-    const ctx = canvas.getContext('2d');
-    let width, height;
-    let particles = [];
-    const particleCount = 50;
-    const connectionDistance = 150;
-    let mouse = { x: null, y: null };
-    const colors = ['#ff2a6d', '#05d9e8', '#ffc800', '#ff6c11']; // Palette colors
-
-    function resize() {
-        width = canvas.width = window.innerWidth;
-        height = canvas.height = window.innerHeight;
-    }
-
-    window.addEventListener('resize', resize);
-    resize();
-
-    window.addEventListener('mousemove', (e) => {
-        mouse.x = e.x;
-        mouse.y = e.y;
-    });
-
-    class Particle {
-        constructor() {
-            this.x = Math.random() * width;
-            this.y = Math.random() * height;
-            this.vx = (Math.random() - 0.5) * 0.8;
-            this.vy = (Math.random() - 0.5) * 0.8;
-            // Made particles slightly larger/bolder
-            this.size = Math.random() * 6 + 4;
-            this.color = colors[Math.floor(Math.random() * colors.length)];
-        }
-
-        update() {
-            this.x += this.vx;
-            this.y += this.vy;
-
-            // Bounce off edges
-            if (this.x < 0 || this.x > width) this.vx *= -1;
-            if (this.y < 0 || this.y > height) this.vy *= -1;
-        }
-
-        draw() {
-            ctx.fillStyle = this.color;
-            ctx.fillRect(this.x, this.y, this.size, this.size); // Square pixels
-        }
-    }
-
-    function initParticles() {
-        particles = [];
-        for (let i = 0; i < particleCount; i++) {
-            particles.push(new Particle());
-        }
-    }
-
-    function animateParticles() {
-        ctx.clearRect(0, 0, width, height);
-
-        for (let i = 0; i < particles.length; i++) {
-            particles[i].update();
-            particles[i].draw();
-
-            // Connect particles if close
-            for (let j = i; j < particles.length; j++) {
-                const dx = particles[i].x - particles[j].x;
-                const dy = particles[i].y - particles[j].y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-
-                if (distance < connectionDistance) {
-                    // Increased opacity (0.4) and line width (2) for bolder lines
-                    ctx.strokeStyle = `rgba(255, 255, 255, ${0.4 - distance/connectionDistance * 0.4})`;
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    ctx.moveTo(particles[i].x, particles[i].y);
-                    ctx.lineTo(particles[j].x, particles[j].y);
-                    ctx.stroke();
-                }
+        document.addEventListener('keydown', (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); paletteEl.classList.contains('open') ? closePalette() : openPalette(); return; }
+            if (paletteEl.classList.contains('open')) {
+                if (e.key === 'Escape') closePalette();
+                else if (e.key === 'ArrowDown') { e.preventDefault(); pSel = Math.min(pSel + 1, pFiltered.length - 1); highlight(); paletteList.querySelector('.sel')?.scrollIntoView({ block: 'nearest' }); }
+                else if (e.key === 'ArrowUp') { e.preventDefault(); pSel = Math.max(pSel - 1, 0); highlight(); paletteList.querySelector('.sel')?.scrollIntoView({ block: 'nearest' }); }
+                else if (e.key === 'Enter') { e.preventDefault(); runCommand(pSel); }
+                return;
             }
-
-            // Mouse interaction
-            if (mouse.x != null) {
-                const dx = particles[i].x - mouse.x;
-                const dy = particles[i].y - mouse.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                if (distance < 200) {
-                    ctx.strokeStyle = particles[i].color; // Color line with particle color
-                    ctx.globalAlpha = 1 - distance/200;
-                    ctx.lineWidth = 3; // Thicker mouse connection
-                    ctx.beginPath();
-                    ctx.moveTo(particles[i].x, particles[i].y);
-                    ctx.lineTo(mouse.x, mouse.y);
-                    ctx.stroke();
-                    ctx.globalAlpha = 1;
-                }
+            if (overlay.classList.contains('open')) {
+                if (e.key === 'Escape') closeModal();
+                else if (e.key === 'ArrowLeft') moveCarousel(-1);
+                else if (e.key === 'ArrowRight') moveCarousel(1);
             }
-        }
-        requestAnimationFrame(animateParticles);
-    }
-
-    initParticles();
-    animateParticles();
-
-
-    // --- Typewriter Effect ---
-    const textElement = document.getElementById('typewriter');
-    const phrases = ["SOFTWARE DEVELOPER",
-    "\"GREAT STUDENT\"", "TECH ENTHUSIAST","ALLEGEDLY VERY FUNNY"];
-
-    let phraseIndex = 0;
-    let charIndex = 0;
-    let isDeleting = false;
-    let typeSpeed = 150;
-    let deleteSpeed = 100;
-    let pauseEnd = 1500;
-
-    function typeWriter() {
-        const currentPhrase = phrases[phraseIndex];
-
-        if (isDeleting) {
-            textElement.textContent = currentPhrase.substring(0, charIndex - 1);
-            charIndex--;
-            typeSpeed = deleteSpeed;
-        } else {
-            textElement.textContent = currentPhrase.substring(0, charIndex + 1);
-            charIndex++;
-            typeSpeed = 150;
-        }
-
-        if (!isDeleting && charIndex === currentPhrase.length) {
-            isDeleting = true;
-            typeSpeed = pauseEnd;
-        } else if (isDeleting && charIndex === 0) {
-            isDeleting = false;
-            phraseIndex = (phraseIndex + 1) % phrases.length;
-            typeSpeed = 500;
-        }
-
-        setTimeout(typeWriter, typeSpeed);
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        typeWriter();
-        startCountdown();
-    });
-
-    // --- Countdown Timer Logic ---
-    function startCountdown() {
-        const timerEl = document.getElementById('game-timer');
-        let timeLeft = 9;
-
-        const timerInterval = setInterval(() => {
-            timerEl.innerText = timeLeft;
-            timeLeft--;
-
-            if (timeLeft < 0) {
-                clearInterval(timerInterval);
-                timerEl.innerText = "INSERT COIN";
-                timerEl.classList.add('flash-effect'); // Start flashing
-                timerEl.style.fontSize = "2rem"; // Make text fit better
-
-                // Restart after 2 seconds
-                setTimeout(() => {
-                    timerEl.classList.remove('flash-effect'); // Stop flashing
-                    timerEl.style.fontSize = "3rem";
-                    startCountdown();
-                }, 4000);
-            }
-        }, 1000);
-    }
-</script>
+        });
+        renderPalette();
+    </script>
 </body>
 </html>
